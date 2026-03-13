@@ -20,3 +20,10 @@ data/screenshots/
 # IDE
 .vscode/
 .idea/
+
+# Requested global ignores
+*.exe
+*.txt
+*.log
+
+
