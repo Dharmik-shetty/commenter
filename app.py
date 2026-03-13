@@ -6,11 +6,9 @@ Main entry point with all routes and API endpoints.
 import os
 import json
 import logging
-import time
-import secrets
 from datetime import datetime, date
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for
 from flask_socketio import SocketIO
 
 from config import Config
@@ -39,7 +37,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config.from_object(Config)
 socketio = SocketIO(app, async_mode='threading')
-APP_BOOT_TIME = time.time()
 
 # Ensure data directories exist
 os.makedirs('data/screenshots', exist_ok=True)
@@ -96,39 +93,6 @@ def log_comment(platform, username, post_url, post_title, comment_text,
 
     # Real-time push to dashboard
     socketio.emit('new_log', entry.to_dict())
-
-
-def _requires_basic_auth() -> bool:
-    return bool(Config.DASHBOARD_USERNAME and Config.DASHBOARD_PASSWORD)
-
-
-def _check_basic_auth(auth) -> bool:
-    if not auth:
-        return False
-    return (
-        secrets.compare_digest(auth.username or '', Config.DASHBOARD_USERNAME)
-        and secrets.compare_digest(auth.password or '', Config.DASHBOARD_PASSWORD)
-    )
-
-
-@app.before_request
-def protect_dashboard_when_configured():
-    """Enable HTTP Basic Auth only when credentials are set via environment."""
-    if not _requires_basic_auth():
-        return None
-
-    # Allow static assets and health checks without auth for uptime monitoring.
-    if request.path.startswith('/static/') or request.path in {'/health', '/api/server/status'}:
-        return None
-
-    if _check_basic_auth(request.authorization):
-        return None
-
-    return Response(
-        'Authentication required',
-        401,
-        {'WWW-Authenticate': 'Basic realm="Bot Dashboard"'},
-    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -846,23 +810,6 @@ def bot_status():
     return jsonify(scheduler.get_all_statuses())
 
 
-@app.route('/health')
-def health_check():
-    return jsonify({'status': 'ok'})
-
-
-@app.route('/api/server/status')
-def server_status():
-    uptime_seconds = int(time.time() - APP_BOOT_TIME)
-    return jsonify({
-        'server_running': True,
-        'uptime_seconds': uptime_seconds,
-        'active_bot_count': scheduler.active_count(),
-        'task_statuses': scheduler.get_all_statuses(),
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
-    })
-
-
 # ═══════════════════════════════════════════════════════════════════════════
 # WEBSOCKET
 # ═══════════════════════════════════════════════════════════════════════════
@@ -877,7 +824,4 @@ def on_connect():
 # ═══════════════════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
-    host = os.environ.get('HOST', '0.0.0.0')
-    port = int(os.environ.get('PORT', 5000))
-    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
-    socketio.run(app, host=host, port=port, debug=debug)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
