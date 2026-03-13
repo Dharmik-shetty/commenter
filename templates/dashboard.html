@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+{% set page_id = "dashboard" %}
+
+{% block title %}Dashboard — AI Comment Bot{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- ═══ STAT CARDS ═══ -->
+<div class="grid-4 mb-24">
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="bi bi-chat-dots-fill"></i></div>
+        <div class="stat-info">
+            <h4>Today's Comments</h4>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-sub">Across all platforms</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+        <div class="stat-info">
+            <h4>Successful</h4>
+            <div class="stat-value" id="stat-success">0</div>
+            <div class="stat-sub">Comments posted</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon orange"><i class="bi bi-percent"></i></div>
+        <div class="stat-info">
+            <h4>Success Rate</h4>
+            <div class="stat-value" id="stat-rate">0%</div>
+            <div class="stat-sub">Today's rate</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon cyan"><i class="bi bi-robot"></i></div>
+        <div class="stat-info">
+            <h4>Active Bots</h4>
+            <div class="stat-value" id="stat-bots">0</div>
+            <div class="stat-sub">Currently running</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ PLATFORM STATUS CARDS ═══ -->
+<div class="grid-3 mb-24">
+    <!-- Reddit -->
+    <div class="platform-card">
+        <div class="platform-header reddit">
+            <div class="flex items-center gap-8">
+                <i class="bi bi-reddit"></i>
+                <strong>Reddit</strong>
+            </div>
+            <span class="status-dot gray" id="reddit-status-dot"></span>
+        </div>
+        <div class="platform-body">
+            <div class="platform-stat-row">
+                <span class="label">Comments Today</span>
+                <span class="value" id="reddit-comments">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Total Attempts</span>
+                <span class="value" id="reddit-total">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Active Accounts</span>
+                <span class="value" id="reddit-accounts">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Running Bots</span>
+                <span class="value" id="reddit-running">0</span>
+            </div>
+            <div class="mt-12 flex gap-8">
+                <button class="btn btn-success btn-sm" onclick="startBot('reddit')">
+                    <i class="bi bi-play-fill"></i> Start
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="stopBot('reddit')">
+                    <i class="bi bi-stop-fill"></i> Stop
+                </button>
+                <a href="/reddit" class="btn btn-outline btn-sm" style="margin-left:auto;">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instagram -->
+    <div class="platform-card">
+        <div class="platform-header instagram">
+            <div class="flex items-center gap-8">
+                <i class="bi bi-instagram"></i>
+                <strong>Instagram</strong>
+            </div>
+            <span class="status-dot gray" id="instagram-status-dot"></span>
+        </div>
+        <div class="platform-body">
+            <div class="platform-stat-row">
+                <span class="label">Comments Today</span>
+                <span class="value" id="instagram-comments">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Total Attempts</span>
+                <span class="value" id="instagram-total">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Active Accounts</span>
+                <span class="value" id="instagram-accounts">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Running Bots</span>
+                <span class="value" id="instagram-running">0</span>
+            </div>
+            <div class="mt-12 flex gap-8">
+                <button class="btn btn-success btn-sm" onclick="startBot('instagram')">
+                    <i class="bi bi-play-fill"></i> Start
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="stopBot('instagram')">
+                    <i class="bi bi-stop-fill"></i> Stop
+                </button>
+                <a href="/instagram" class="btn btn-outline btn-sm" style="margin-left:auto;">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube -->
+    <div class="platform-card">
+        <div class="platform-header youtube">
+            <div class="flex items-center gap-8">
+                <i class="bi bi-youtube"></i>
+                <strong>YouTube</strong>
+            </div>
+            <span class="status-dot gray" id="youtube-status-dot"></span>
+        </div>
+        <div class="platform-body">
+            <div class="platform-stat-row">
+                <span class="label">Comments Today</span>
+                <span class="value" id="youtube-comments">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Total Attempts</span>
+                <span class="value" id="youtube-total">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Active Accounts</span>
+                <span class="value" id="youtube-accounts">0</span>
+            </div>
+            <div class="platform-stat-row">
+                <span class="label">Running Bots</span>
+                <span class="value" id="youtube-running">0</span>
+            </div>
+            <div class="mt-12 flex gap-8">
+                <button class="btn btn-success btn-sm" onclick="startBot('youtube')">
+                    <i class="bi bi-play-fill"></i> Start
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="stopBot('youtube')">
+                    <i class="bi bi-stop-fill"></i> Stop
+                </button>
+                <a href="/youtube" class="btn btn-outline btn-sm" style="margin-left:auto;">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ LIVE ACTIVITY FEED ═══ -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="bi bi-activity" style="margin-right:8px;color:var(--accent)"></i>Live Activity</h3>
+        <span style="font-size:12px;color:var(--text-muted)">Auto-updates via WebSocket</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="log-feed" id="live-feed">
+            <div class="empty-state">
+                <i class="bi bi-chat-dots"></i>
+                <p>No activity yet. Start a bot to see live logs.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

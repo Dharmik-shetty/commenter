@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% set page_id = "ai-settings" %}
+
+{% block title %}AI Settings — AI Comment Bot{% endblock %}
+{% block page_title %}<i class="bi bi-cpu-fill" style="color:var(--accent);margin-right:8px"></i>AI Settings{% endblock %}
+
+{% block content %}
+<div class="grid-2">
+    <!-- ═══ LEFT: Gemini Configuration ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-key" style="margin-right:8px;color:var(--accent)"></i>Gemini API Configuration</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">API Key</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="setting-gemini_api_key"
+                               placeholder="Enter your Gemini API key">
+                        <button class="btn btn-outline" id="test-ai-btn" onclick="testAIConnection()">
+                            <i class="bi bi-plug"></i> Test Connection
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Model</label>
+                    <select class="form-control" id="setting-gemini_model">
+                        <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recommended)</option>
+                        <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    </select>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Temperature</div>
+                        <div class="setting-desc">Higher = more creative, lower = more focused</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_temperature"
+                               min="0" max="2" step="0.1" value="0.9" style="width:140px">
+                        <span class="range-value" id="setting-gemini_temperature-value">0.9</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Max Tokens</div>
+                        <div class="setting-desc">Maximum length of generated comment</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_max_tokens"
+                               min="50" max="2000" step="50" value="300" style="width:140px">
+                        <span class="range-value" id="setting-gemini_max_tokens-value">300</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Top P</div>
+                        <div class="setting-desc">Nucleus sampling threshold</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_top_p"
+                               min="0" max="1" step="0.05" value="0.95" style="width:140px">
+                        <span class="range-value" id="setting-gemini_top_p-value">0.95</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Top K</div>
+                        <div class="setting-desc">Number of top tokens to sample from</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_top_k"
+                               min="1" max="100" step="1" value="40" style="width:140px">
+                        <span class="range-value" id="setting-gemini_top_k-value">40</span>
+                    </div>
+                </div>
+
+                <div class="mt-20">
+                    <button class="btn btn-primary btn-lg" onclick="saveAISettings()" style="width:100%;">
+                        <i class="bi bi-save"></i> Save AI Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-gear" style="margin-right:8px;color:var(--accent)"></i>Global Settings</h3>
+            </div>
+            <div class="card-body">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Headless Mode</div>
+                        <div class="setting-desc">Run browsers without visible window</div>
+                    </div>
+                    <div class="setting-control">
+                        <label class="toggle">
+                            <input type="checkbox" id="setting-headless_mode" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concurrency Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-diagram-3" style="margin-right:8px;color:var(--accent)"></i>Concurrency & Resources</h3>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px;">
+                    Control how many accounts run at the same time. Lower values use less RAM/CPU.
+                    Each running account uses ~200-300 MB RAM (headless browser).
+                </p>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Total Concurrent Accounts</div>
+                        <div class="setting-desc">Max accounts running at once (all platforms combined)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-max_concurrent"
+                               min="1" max="30" step="1" value="5" style="width:140px">
+                        <span class="range-value" id="setting-max_concurrent-value">5</span>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+                    Allocate slots per platform. Remaining accounts will queue and auto-start
+                    when a slot frees up. Sum should not exceed the total above.
+                </p>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label"><i class="bi bi-reddit" style="color:var(--reddit);margin-right:6px"></i>Reddit Slots</div>
+                        <div class="setting-desc">Max Reddit accounts running at once</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-concurrent_reddit"
+                               min="0" max="20" step="1" value="3" style="width:140px">
+                        <span class="range-value" id="setting-concurrent_reddit-value">3</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label"><i class="bi bi-youtube" style="color:var(--youtube);margin-right:6px"></i>YouTube Slots</div>
+                        <div class="setting-desc">Max YouTube accounts running at once</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-concurrent_youtube"
+                               min="0" max="20" step="1" value="1" style="width:140px">
+                        <span class="range-value" id="setting-concurrent_youtube-value">1</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label"><i class="bi bi-instagram" style="color:var(--instagram);margin-right:6px"></i>Instagram Slots</div>
+                        <div class="setting-desc">Max Instagram accounts running at once</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-concurrent_instagram"
+                               min="0" max="20" step="1" value="1" style="width:140px">
+                        <span class="range-value" id="setting-concurrent_instagram-value">1</span>
+                    </div>
+                </div>
+
+                <div class="mt-12" style="padding:10px;background:rgba(var(--accent-rgb,108,99,255),0.08);border-radius:8px;">
+                    <div style="font-size:13px;color:var(--text-muted);">
+                        <i class="bi bi-memory" style="margin-right:4px"></i>
+                        Estimated RAM: <strong id="ram-estimate">~1.5 GB</strong>
+                        <span style="margin-left:12px"><i class="bi bi-info-circle"></i> Based on current slot allocation</span>
+                    </div>
+                </div>
+
+                <div class="mt-20">
+                    <button class="btn btn-primary btn-lg" onclick="saveConcurrencySettings()" style="width:100%;">
+                        <i class="bi bi-save"></i> Save Concurrency Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ RIGHT: Preprompts ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-chat-quote" style="margin-right:8px;color:var(--reddit)"></i>Reddit Pre-prompt</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group" style="margin-bottom:0">
+                    <textarea class="form-control" id="setting-reddit_preprompt" rows="6"
+                              placeholder="Instructions for Reddit comment generation..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-chat-quote" style="margin-right:8px;color:var(--instagram)"></i>Instagram Pre-prompt</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group" style="margin-bottom:0">
+                    <textarea class="form-control" id="setting-instagram_preprompt" rows="6"
+                              placeholder="Instructions for Instagram comment generation..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-chat-quote" style="margin-right:8px;color:var(--youtube)"></i>YouTube Pre-prompt</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group" style="margin-bottom:0">
+                    <textarea class="form-control" id="setting-youtube_preprompt" rows="6"
+                              placeholder="Instructions for YouTube comment generation..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

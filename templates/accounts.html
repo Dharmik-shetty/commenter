@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% set page_id = "accounts" %}
+
+{% block title %}Accounts — AI Comment Bot{% endblock %}
+{% block page_title %}<i class="bi bi-people-fill" style="color:var(--accent);margin-right:8px"></i>Account Management{% endblock %}
+
+{% block content %}
+<!-- ═══ TOP BAR ═══ -->
+<div class="control-bar">
+    <div class="status-text">
+        <i class="bi bi-info-circle" style="color:var(--text-muted)"></i>
+        <span>Manage accounts for all platforms. Passwords are stored locally.</span>
+    </div>
+    <button class="btn btn-primary" data-modal="add-account-modal">
+        <i class="bi bi-plus-lg"></i> Add Account
+    </button>
+</div>
+
+<!-- ═══ REDDIT ACCOUNTS ═══ -->
+<div class="card mb-24">
+    <div class="card-header">
+        <h3><i class="bi bi-reddit" style="color:var(--reddit);margin-right:8px"></i>Reddit Accounts</h3>
+        <span class="badge badge-primary" id="reddit-acc-count">0</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Comments Today</th>
+                        <th>Proxy</th>
+                        <th>Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reddit-accounts-tbody">
+                    <tr><td colspan="6" class="empty-state"><p>No Reddit accounts</p></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ INSTAGRAM ACCOUNTS ═══ -->
+<div class="card mb-24">
+    <div class="card-header">
+        <h3><i class="bi bi-instagram" style="color:var(--instagram);margin-right:8px"></i>Instagram Accounts</h3>
+        <span class="badge badge-primary" id="insta-acc-count">0</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Comments Today</th>
+                        <th>Proxy</th>
+                        <th>Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="instagram-accounts-tbody">
+                    <tr><td colspan="6" class="empty-state"><p>No Instagram accounts</p></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ YOUTUBE ACCOUNTS ═══ -->
+<div class="card mb-24">
+    <div class="card-header">
+        <h3><i class="bi bi-youtube" style="color:var(--youtube);margin-right:8px"></i>YouTube Accounts</h3>
+        <span class="badge badge-primary" id="yt-acc-count">0</span>
+    </div>
+    <div class="card-body" style="padding:0;">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Comments Today</th>
+                        <th>Proxy</th>
+                        <th>Last Active</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="youtube-accounts-tbody">
+                    <tr><td colspan="6" class="empty-state"><p>No YouTube accounts</p></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ ADD ACCOUNT MODAL ═══ -->
+<div class="modal-overlay" id="add-account-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Add Account</h3>
+            <button class="modal-close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Platform</label>
+                <select class="form-control" id="acc-platform">
+                    <option value="reddit">Reddit</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" id="acc-username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="acc-password" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email (for YouTube/Google login)</label>
+                <input type="email" class="form-control" id="acc-email" placeholder="Optional">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Proxy (optional)</label>
+                <input type="text" class="form-control" id="acc-proxy" placeholder="http://user:pass@host:port">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Daily Limit</label>
+                <input type="number" class="form-control" id="acc-limit" value="1000" min="1" max="10000">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-cancel">Cancel</button>
+            <button class="btn btn-primary" onclick="addAccount()">
+                <i class="bi bi-plus-lg"></i> Add Account
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

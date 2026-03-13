@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% set page_id = "reddit" %}
+
+{% block title %}Reddit — AI Comment Bot{% endblock %}
+{% block page_title %}<i class="bi bi-reddit" style="color:var(--reddit);margin-right:8px"></i>Reddit Configuration{% endblock %}
+
+{% block content %}
+<!-- ═══ CONTROL BAR ═══ -->
+<div class="control-bar">
+    <div class="status-text">
+        <span class="status-dot gray" id="reddit-page-dot"></span>
+        <span id="reddit-page-status">Bot Idle</span>
+    </div>
+    <div class="flex gap-8">
+        <button class="btn btn-success" onclick="startBot('reddit')" id="reddit-start-btn">
+            <i class="bi bi-play-fill"></i> Start Bot
+        </button>
+        <button class="btn btn-danger" onclick="stopBot('reddit')">
+            <i class="bi bi-stop-fill"></i> Stop Bot
+        </button>
+        <button class="btn btn-primary" onclick="saveRedditSettings()">
+            <i class="bi bi-save"></i> Save Settings
+        </button>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- ═══ LEFT COLUMN ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <!-- Subreddits -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-collection" style="margin-right:8px;color:var(--accent)"></i>Subreddits</h3>
+            </div>
+            <div class="card-body">
+                <div class="input-group mb-12">
+                    <input type="text" class="form-control" id="subreddit-input"
+                           placeholder="Enter subreddit names, comma-separated (e.g., fitness, gym, health)" 
+                           onkeypress="if(event.key==='Enter')addSubreddit()">
+                    <select class="form-control" id="subreddit-sort" style="max-width:120px">
+                        <option value="hot">🔥 Hot</option>
+                        <option value="new">🆕 New</option>
+                        <option value="top">⬆️ Top</option>
+                        <option value="rising">📈 Rising</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="addSubreddit()">
+                        <i class="bi bi-plus-lg"></i> Add
+                    </button>
+                </div>
+                <div class="tag-list" id="subreddit-list">
+                    <div class="empty-state"><p>No subreddits added</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semantic Keywords -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-search-heart" style="margin-right:8px;color:var(--accent)"></i>Semantic Keywords</h3>
+                <span class="badge badge-primary">TensorFlow/PyTorch</span>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+                    Posts will be matched against these keywords using AI semantic similarity.
+                    Only matching posts will be commented on.
+                </p>
+                <div class="input-group mb-12">
+                    <input type="text" class="form-control" id="reddit-keyword-input"
+                           placeholder="Comma-separated (e.g., AI fitness app, workout tracker)"
+                           onkeypress="if(event.key==='Enter')addKeyword('reddit')">
+                    <button class="btn btn-primary" onclick="addKeyword('reddit')">
+                        <i class="bi bi-plus-lg"></i> Add
+                    </button>
+                </div>
+                <div class="tag-list" id="reddit-keyword-list">
+                    <div class="empty-state"><p>No keywords added</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pre-prompt -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-chat-quote" style="margin-right:8px;color:var(--accent)"></i>Comment Pre-prompt</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">AI instruction for generating Reddit comments</label>
+                    <textarea class="form-control" id="setting-reddit_preprompt" rows="5"
+                              placeholder="Instructions for the AI on how to write comments..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ RIGHT COLUMN ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <!-- Posting Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-sliders" style="margin-right:8px;color:var(--accent)"></i>Posting Settings</h3>
+            </div>
+            <div class="card-body">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Daily Comment Limit</div>
+                        <div class="setting-desc">Max comments per account per day</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_daily_limit"
+                               min="10" max="5000" step="10" value="1000" style="width:140px">
+                        <span class="range-value" id="setting-reddit_daily_limit-value">1000</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Posts Per Subreddit Visit</div>
+                        <div class="setting-desc">How many posts to check per subreddit</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_posts_per_visit"
+                               min="5" max="50" step="5" value="20" style="width:140px">
+                        <span class="range-value" id="setting-reddit_posts_per_visit-value">20</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Match Threshold</div>
+                        <div class="setting-desc">Semantic similarity required (0-100%)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_match_threshold"
+                               min="0.1" max="0.95" step="0.05" value="0.45" style="width:140px">
+                        <span class="range-value" id="setting-reddit_match_threshold-value">0.45</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Sort Method</div>
+                        <div class="setting-desc">Default subreddit sorting</div>
+                    </div>
+                    <div class="setting-control">
+                        <select class="form-control" id="setting-reddit_sort_method" style="width:140px">
+                            <option value="hot">🔥 Hot</option>
+                            <option value="new">🆕 New</option>
+                            <option value="top">⬆️ Top</option>
+                            <option value="rising">📈 Rising</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-clock-history" style="margin-right:8px;color:var(--accent)"></i>Schedule & Timing</h3>
+            </div>
+            <div class="card-body">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Minimum Delay</div>
+                        <div class="setting-desc">Min seconds between comments</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_min_delay"
+                               min="5" max="300" step="5" value="30" style="width:140px">
+                        <span class="range-value" id="setting-reddit_min_delay-value">30</span>s
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Maximum Delay</div>
+                        <div class="setting-desc">Max seconds between comments</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_max_delay"
+                               min="10" max="600" step="10" value="120" style="width:140px">
+                        <span class="range-value" id="setting-reddit_max_delay-value">120</span>s
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Start Hour</div>
+                        <div class="setting-desc">Begin posting at (24h format)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_start_hour"
+                               min="0" max="23" step="1" value="7" style="width:140px">
+                        <span class="range-value" id="setting-reddit_start_hour-value">7</span>:00
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">End Hour</div>
+                        <div class="setting-desc">Stop posting at (24h format)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-reddit_end_hour"
+                               min="1" max="24" step="1" value="23" style="width:140px">
+                        <span class="range-value" id="setting-reddit_end_hour-value">23</span>:00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-diagram-3" style="margin-right:8px;color:var(--accent)"></i>Distribution</h3>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12.5px;color:var(--text-secondary);line-height:1.7;">
+                    Comments are <strong>evenly distributed</strong> across all configured subreddits.
+                    If a subreddit has fewer matching posts, the surplus is redistributed to others.
+                    Within each subreddit, posts are chosen randomly for variety.
+                    Each account operates independently with its own browser session.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

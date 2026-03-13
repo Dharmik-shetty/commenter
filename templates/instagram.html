@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% set page_id = "instagram" %}
+
+{% block title %}Instagram — AI Comment Bot{% endblock %}
+{% block page_title %}<i class="bi bi-instagram" style="color:var(--instagram);margin-right:8px"></i>Instagram Configuration{% endblock %}
+
+{% block content %}
+<!-- ═══ CONTROL BAR ═══ -->
+<div class="control-bar">
+    <div class="status-text">
+        <span class="status-dot gray" id="instagram-page-dot"></span>
+        <span id="instagram-page-status">Bot Idle</span>
+    </div>
+    <div class="flex gap-8">
+        <button class="btn btn-success" onclick="startBot('instagram')" id="instagram-start-btn">
+            <i class="bi bi-play-fill"></i> Start Bot
+        </button>
+        <button class="btn btn-danger" onclick="stopBot('instagram')">
+            <i class="bi bi-stop-fill"></i> Stop Bot
+        </button>
+        <button class="btn btn-primary" onclick="saveInstagramSettings()">
+            <i class="bi bi-save"></i> Save Settings
+        </button>
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- ═══ LEFT COLUMN ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <!-- Search Keywords -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-hash" style="margin-right:8px;color:var(--instagram)"></i>Search Keywords / Hashtags</h3>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">
+                    The bot will search Instagram using these keywords/hashtags and comment on matching posts.
+                    Comments are distributed evenly across keywords.
+                </p>
+                <div class="input-group mb-12">
+                    <input type="text" class="form-control" id="instagram-keyword-input"
+                           placeholder="Comma-separated (e.g., fitness, workout, gymlife)"
+                           onkeypress="if(event.key==='Enter')addKeyword('instagram')">
+                    <button class="btn btn-primary" onclick="addKeyword('instagram')">
+                        <i class="bi bi-plus-lg"></i> Add
+                    </button>
+                </div>
+                <div class="tag-list" id="instagram-keyword-list">
+                    <div class="empty-state"><p>No keywords added</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pre-prompt -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-chat-quote" style="margin-right:8px;color:var(--instagram)"></i>Comment Pre-prompt</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">AI instruction for generating Instagram comments</label>
+                    <textarea class="form-control" id="setting-instagram_preprompt" rows="5"
+                              placeholder="Instructions for the AI on how to write Instagram comments..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══ RIGHT COLUMN ═══ -->
+    <div class="flex flex-col gap-20">
+
+        <!-- Posting Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-sliders" style="margin-right:8px;color:var(--instagram)"></i>Posting Settings</h3>
+            </div>
+            <div class="card-body">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Daily Comment Limit</div>
+                        <div class="setting-desc">Max comments per account per day</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-instagram_daily_limit"
+                               min="10" max="5000" step="10" value="1000" style="width:140px">
+                        <span class="range-value" id="setting-instagram_daily_limit-value">1000</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Minimum Delay</div>
+                        <div class="setting-desc">Min seconds between comments</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-instagram_min_delay"
+                               min="5" max="300" step="5" value="30" style="width:140px">
+                        <span class="range-value" id="setting-instagram_min_delay-value">30</span>s
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Maximum Delay</div>
+                        <div class="setting-desc">Max seconds between comments</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-instagram_max_delay"
+                               min="10" max="600" step="10" value="120" style="width:140px">
+                        <span class="range-value" id="setting-instagram_max_delay-value">120</span>s
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-clock-history" style="margin-right:8px;color:var(--instagram)"></i>Schedule & Timing</h3>
+            </div>
+            <div class="card-body">
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Start Hour</div>
+                        <div class="setting-desc">Begin posting at (24h format)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-instagram_start_hour"
+                               min="0" max="23" step="1" value="7" style="width:140px">
+                        <span class="range-value" id="setting-instagram_start_hour-value">7</span>:00
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">End Hour</div>
+                        <div class="setting-desc">Stop posting at (24h format)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-instagram_end_hour"
+                               min="1" max="24" step="1" value="23" style="width:140px">
+                        <span class="range-value" id="setting-instagram_end_hour-value">23</span>:00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="bi bi-info-circle" style="margin-right:8px;color:var(--instagram)"></i>How It Works</h3>
+            </div>
+            <div class="card-body">
+                <p style="font-size:12.5px;color:var(--text-secondary);line-height:1.7;">
+                    <strong>1.</strong> Bot searches Instagram using each keyword/hashtag<br>
+                    <strong>2.</strong> Collects posts from search results<br>
+                    <strong>3.</strong> Distributes comment budget evenly across keywords<br>
+                    <strong>4.</strong> Reads post caption and sends to Gemini AI for comment generation<br>
+                    <strong>5.</strong> Posts comment with human-like typing and random delays
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

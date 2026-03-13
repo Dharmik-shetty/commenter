@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Comment Bot{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-page="{{ page_id }}">
+
+<div id="toast-container" class="toast-container"></div>
+
+<div class="app-layout">
+    <!-- ═══ SIDEBAR ═══ -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">🤖</div>
+            <div>
+                <h1>CommentBot</h1>
+                <small>AI Marketing Automation</small>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <a href="/" class="nav-link {{ 'active' if page_id == 'dashboard' }}">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Platforms</div>
+                <a href="/reddit" class="nav-link {{ 'active' if page_id == 'reddit' }}">
+                    <i class="bi bi-reddit"></i> Reddit
+                    <span class="badge" id="sidebar-reddit-count">0</span>
+                </a>
+                <a href="/instagram" class="nav-link {{ 'active' if page_id == 'instagram' }}">
+                    <i class="bi bi-instagram"></i> Instagram
+                    <span class="badge" id="sidebar-insta-count">0</span>
+                </a>
+                <a href="/youtube" class="nav-link {{ 'active' if page_id == 'youtube' }}">
+                    <i class="bi bi-youtube"></i> YouTube
+                    <span class="badge" id="sidebar-yt-count">0</span>
+                </a>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Configuration</div>
+                <a href="/accounts" class="nav-link {{ 'active' if page_id == 'accounts' }}">
+                    <i class="bi bi-people-fill"></i> Accounts
+                </a>
+                <a href="/ai-settings" class="nav-link {{ 'active' if page_id == 'ai-settings' }}">
+                    <i class="bi bi-cpu-fill"></i> AI Settings
+                </a>
+                <a href="/logs" class="nav-link {{ 'active' if page_id == 'logs' }}">
+                    <i class="bi bi-journal-text"></i> Logs
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button class="btn-stop-all" onclick="stopAllBots()">
+                <i class="bi bi-stop-circle"></i> Stop All Bots
+            </button>
+        </div>
+    </aside>
+
+    <!-- ═══ MAIN ═══ -->
+    <div class="main-content">
+        <header class="topbar">
+            <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+            <div class="topbar-right">
+                <span class="status-dot gray" id="global-status-dot"></span>
+                <span id="global-status-text" style="font-size:13px;color:var(--text-secondary)">All bots idle</span>
+            </div>
+        </header>
+
+        <main class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

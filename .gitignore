@@ -1,0 +1,22 @@
+# Environment variables (sensitive credentials)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Database and logs
+data/bot.db
+data/bot.log
+data/screenshots/
+
+# IDE
+.vscode/
+.idea/
