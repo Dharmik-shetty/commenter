@@ -27,13 +27,28 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════════════════════
 
 async function apiFetch(path, options = {}) {
+    const timeoutMs = typeof options.timeoutMs === 'number' ? options.timeoutMs : 30000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const defaults = {
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
     };
-    const res = await fetch(API + path, { ...defaults, ...options });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Request failed');
-    return data;
+    const { timeoutMs: _ignoredTimeout, ...fetchOptions } = options;
+
+    try {
+        const res = await fetch(API + path, { ...defaults, ...fetchOptions });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        return data;
+    } catch (err) {
+        if (err && err.name === 'AbortError') {
+            throw new Error('Request timed out. Check server logs and try again.');
+        }
+        throw err;
+    } finally {
+        clearTimeout(timeout);
+    }
 }
 
 function showToast(message, type = 'info') {
@@ -465,7 +480,10 @@ async function startBot(platform) {
     const btn = document.getElementById(`${platform}-start-btn`);
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Starting…'; }
     try {
-        const data = await apiFetch(`/api/bot/${platform}/start`, { method: 'POST' });
+        const data = await apiFetch(`/api/bot/${platform}/start`, {
+            method: 'POST',
+            timeoutMs: 45000,
+        });
         let msg = `${platform} bot started (${data.count} accounts)`;
         if (data.queued_count > 0) {
             msg += `, ${data.queued_count} queued (limit: ${data.platform_limit} concurrent)`;

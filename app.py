@@ -563,9 +563,6 @@ def start_reddit_bot():
     keywords_db = Keyword.query.filter_by(platform='reddit', is_active=True).all()
     keyword_list = [k.keyword for k in keywords_db]
 
-    if keyword_list:
-        semantic_matcher.set_keywords(keyword_list)
-
     settings = _get_platform_settings('reddit')
     preprompt = BotSettings.get('reddit_preprompt', Config.DEFAULT_PREPROMPT)
     ai_batch = _get_ai_batch_settings()
@@ -906,8 +903,6 @@ def _start_task_for_recovery(platform: str, username: str) -> bool:
 
         keywords_db = Keyword.query.filter_by(platform='reddit', is_active=True).all()
         keyword_list = [k.keyword for k in keywords_db]
-        if keyword_list:
-            semantic_matcher.set_keywords(keyword_list)
 
         settings = _get_platform_settings('reddit')
         ai_batch = _get_ai_batch_settings()

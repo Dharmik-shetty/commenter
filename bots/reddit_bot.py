@@ -282,6 +282,14 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
     try:
         bot.launch_browser()
 
+        # Prepare semantic matching in the worker thread to keep the start API responsive.
+        if keywords and semantic_matcher:
+            try:
+                semantic_matcher.set_keywords(keywords)
+            except Exception as e:
+                logger.error(f"[Reddit] Semantic matcher init failed: {e}")
+                semantic_matcher = None
+
         if not bot.login():
             logger.error(f"[Reddit] Cannot start - login failed for {account['username']}")
             return
