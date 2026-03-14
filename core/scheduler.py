@@ -117,16 +117,17 @@ class CommentScheduler:
 
         return wait, max(duration, 0)
 
-    def start_task(self, task_id: str, task_fn: Callable, *args, **kwargs):
+    def start_task(self, scheduler_task_id: str, task_fn: Callable, *args, **kwargs):
         """
         Start a comment task in a new thread.
         If a concurrency limit is set, the task will wait for a free slot.
 
         Args:
-            task_id: Unique identifier (e.g., 'reddit_user1')
+            scheduler_task_id: Unique identifier (e.g., 'reddit_user1')
             task_fn: The function to run (bot's main loop)
             *args, **kwargs: Arguments to pass to task_fn
         """
+        task_id = scheduler_task_id
         with self._lock:
             if task_id in self._threads and self._threads[task_id].is_alive():
                 logger.warning(f"Task {task_id} is already running")
