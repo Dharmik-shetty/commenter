@@ -6,6 +6,7 @@ Handles login, post scraping, and commenting through the browser.
 import logging
 import time
 import random
+from datetime import datetime, timedelta
 from typing import Optional
 from threading import Event
 
@@ -279,8 +280,22 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
     bot = RedditBot(account, headless=headless)
 
+    def emit_status(now_text: str, next_text: str = '', eta_seconds: float | None = None):
+        if not log_callback:
+            return
+        eta_text = ''
+        if eta_seconds is not None and eta_seconds > 0:
+            eta_at = datetime.now() + timedelta(seconds=eta_seconds)
+            eta_text = f" Next ETA: {int(eta_seconds)}s (~{eta_at.strftime('%H:%M:%S')})."
+        details = (next_text + eta_text).strip()
+        log_callback(
+            'reddit', account['username'], '', now_text, details,
+            'pending', '', 'system', None
+        )
+
     try:
         bot.launch_browser()
+        emit_status('Now: launching browser', 'Next: login to Reddit account')
 
         # Prepare semantic matching in the worker thread to keep the start API responsive.
         if keywords and semantic_matcher:
@@ -293,11 +308,13 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
         if not bot.login():
             logger.error(f"[Reddit] Cannot start - login failed for {account['username']}")
             return
+        emit_status('Now: logged in successfully', 'Next: gather candidate posts from subreddits')
 
         # Wait for schedule window if needed
         wait_secs, window_duration = CommentScheduler.time_until_window(start_hour, end_hour)
         if wait_secs > 0:
             logger.info(f"[Reddit] Waiting {wait_secs:.0f}s for schedule window")
+            emit_status('Now: outside schedule window', 'Next: start posting when window opens', wait_secs)
             for _ in range(int(wait_secs)):
                 if stop_event.is_set():
                     return
@@ -333,6 +350,10 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
             logger.info(f"[Reddit] Round {current_round}: Scraping posts "
                         f"(sort={cycle_sort}, per_sub={scaled_posts_per_visit}, "
                         f"threshold={current_match_threshold:.2f}, need {remaining} more)")
+            emit_status(
+                f"Now: round {current_round} scraping posts ({cycle_sort})",
+                f"Next: semantic-match and allocate up to {remaining} comments"
+            )
 
             subreddit_eligible = {}
 
@@ -380,6 +401,10 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
             logger.info(f"[Reddit] Round {current_round}: {total_allocated} comments allocated "
                         f"across {len(allocation)} subreddits")
+            emit_status(
+                f"Now: {total_allocated} comments allocated in round {current_round}",
+                'Next: generate AI comments and post sequentially'
+            )
 
             # --- Phase 3: Calculate delays ---
             _, window_remaining = CommentScheduler.time_until_window(start_hour, end_hour)
@@ -452,6 +477,11 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
                     if queue_index < len(delays):
                         delay = delays[queue_index]
+                        emit_status(
+                            f"Now: waiting before next Reddit comment ({sub_name})",
+                            'Next: open next post and submit generated comment',
+                            delay,
+                        )
                         logger.debug(f"[Reddit] Waiting {delay:.1f}s before next comment")
                         for _ in range(int(delay)):
                             if stop_event.is_set():
@@ -469,6 +499,10 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
         logger.info(f"[Reddit] Bot finished. {bot.comments_made}/{total_comments_target} comments "
                      f"posted by {account['username']} in {current_round} round(s)")
+        emit_status(
+            f"Now: run finished ({bot.comments_made}/{total_comments_target} comments)",
+            'Next: idle until next start request'
+        )
 
         if state_store and task_id:
             if stop_event.is_set():

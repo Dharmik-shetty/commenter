@@ -168,13 +168,60 @@
 <div class="card">
     <div class="card-header">
         <h3><i class="bi bi-activity" style="margin-right:8px;color:var(--accent)"></i>Live Activity</h3>
-        <span style="font-size:12px;color:var(--text-muted)">Auto-updates via WebSocket</span>
+        <div class="flex items-center gap-8">
+            <span style="font-size:12px;color:var(--text-muted)">Auto-updates via WebSocket</span>
+            <button class="btn btn-outline btn-sm" onclick="toggleDashboardLogsPanel()" id="dashboard-logs-toggle-btn">
+                <i class="bi bi-terminal"></i> Show Dashboard Logs
+            </button>
+        </div>
     </div>
     <div class="card-body" style="padding:0;">
         <div class="log-feed" id="live-feed">
             <div class="empty-state">
                 <i class="bi bi-chat-dots"></i>
                 <p>No activity yet. Start a bot to see live logs.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-24" id="dashboard-logs-panel" style="display:none;">
+    <div class="card-header">
+        <h3><i class="bi bi-journal-richtext" style="margin-right:8px;color:var(--info)"></i>Dashboard Log Center</h3>
+        <div class="flex items-center gap-8">
+            <span style="font-size:12px;color:var(--text-muted)">Readable bot state + terminal-style backend logs</span>
+            <button class="btn btn-outline btn-sm" onclick="refreshDashboardLogsNow()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="grid-2">
+            <div>
+                <h4 style="font-size:13px;margin-bottom:10px;color:var(--text-secondary);">Bot State Timeline</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Platform</th>
+                                <th>Account</th>
+                                <th>Now</th>
+                                <th>Next</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-state-tbody">
+                            <tr><td colspan="5" class="empty-state"><p>No bot state logs yet</p></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="font-size:13px;margin-bottom:10px;color:var(--text-secondary);">Backend System Logs</h4>
+                <div class="system-log-box" id="dashboard-system-log">
+No system logs loaded yet.
+                </div>
             </div>
         </div>
     </div>

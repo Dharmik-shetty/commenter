@@ -5,6 +5,10 @@
 // ── Globals ────────────────────────────────────────────────────────
 const API = '';  // Base URL (same origin)
 let socket = null;
+let platformStatusInterval = null;
+let logsInterval = null;
+let dashboardLogsInterval = null;
+let dashboardLogsVisible = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     initSocket();
@@ -120,6 +124,23 @@ function initSocket() {
         // Append to live feed if present
         const feed = document.getElementById('live-feed');
         if (feed) addLogEntry(feed, log);
+
+        // Refresh logs table live if Logs page is open.
+        const logsTable = document.getElementById('logs-tbody');
+        if (logsTable) {
+            filterLogs();
+        }
+
+        if (dashboardLogsVisible) {
+            loadDashboardReadableState();
+        }
+
+        // Keep control-bar state accurate on platform pages.
+        const page = document.body.dataset.page;
+        if (['reddit', 'instagram', 'youtube'].includes(page) && log.platform === page) {
+            refreshPlatformControlBar(page);
+        }
+
         // Update counters
         refreshStats();
     });
@@ -217,6 +238,95 @@ function initDashboard() {
     statsInterval = setInterval(refreshStats, 5000);
 }
 
+function toggleDashboardLogsPanel() {
+    const panel = document.getElementById('dashboard-logs-panel');
+    const btn = document.getElementById('dashboard-logs-toggle-btn');
+    if (!panel || !btn) return;
+
+    dashboardLogsVisible = !dashboardLogsVisible;
+    panel.style.display = dashboardLogsVisible ? '' : 'none';
+    btn.innerHTML = dashboardLogsVisible
+        ? '<i class="bi bi-eye-slash"></i> Hide Dashboard Logs'
+        : '<i class="bi bi-terminal"></i> Show Dashboard Logs';
+
+    if (dashboardLogsVisible) {
+        refreshDashboardLogsNow();
+        if (dashboardLogsInterval) clearInterval(dashboardLogsInterval);
+        dashboardLogsInterval = setInterval(refreshDashboardLogsNow, 5000);
+    } else if (dashboardLogsInterval) {
+        clearInterval(dashboardLogsInterval);
+        dashboardLogsInterval = null;
+    }
+}
+
+function safeText(value) {
+    if (value === null || value === undefined) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+async function refreshDashboardLogsNow() {
+    await Promise.all([
+        loadDashboardReadableState(),
+        loadDashboardSystemLogs(),
+    ]);
+}
+
+async function loadDashboardReadableState() {
+    try {
+        const data = await apiFetch('/api/logs?limit=120');
+        const tbody = document.getElementById('dashboard-state-tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '';
+        const entries = (data.logs || []).filter(l =>
+            l.status === 'pending' || l.status === 'failed' || l.status === 'success'
+        );
+
+        if (entries.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><p>No bot state logs yet</p></td></tr>';
+            return;
+        }
+
+        entries.slice(0, 40).forEach(log => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${safeText(formatDate(log.created_at))}</td>
+                <td><span class="log-platform ${safeText(log.platform)}">${safeText(log.platform)}</span></td>
+                <td>${safeText(log.account_username)}</td>
+                <td title="${safeText(log.post_title)}">${safeText(truncate(log.post_title || '—', 65))}</td>
+                <td title="${safeText(log.comment_text)}">${safeText(truncate(log.comment_text || '—', 95))}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error('Load dashboard readable state failed:', e);
+    }
+}
+
+async function loadDashboardSystemLogs() {
+    try {
+        const data = await apiFetch('/api/logs/system?limit=220');
+        const box = document.getElementById('dashboard-system-log');
+        if (!box) return;
+
+        const lines = data.lines || [];
+        if (!lines.length) {
+            box.textContent = 'No backend system logs found yet.';
+            return;
+        }
+
+        box.textContent = lines.join('\n');
+        box.scrollTop = box.scrollHeight;
+    } catch (e) {
+        console.error('Load dashboard system logs failed:', e);
+    }
+}
+
 async function loadProcessStateSummary() {
     try {
         const data = await apiFetch('/api/state/summary');
@@ -288,6 +398,67 @@ async function initRedditPage() {
     await loadSubreddits();
     await loadKeywords('reddit');
     initRangeSliders();
+    startPlatformStatusSync('reddit');
+}
+
+function setControlButtons(platform, state) {
+    const startBtn = document.getElementById(`${platform}-start-btn`);
+    const stopBtn = document.getElementById(`${platform}-stop-btn`);
+    if (!startBtn || !stopBtn) return;
+
+    const isRunning = state === 'running';
+    const isQueued = state === 'queued';
+
+    startBtn.style.display = isRunning || isQueued ? 'none' : '';
+    stopBtn.style.display = isRunning || isQueued ? '' : 'none';
+    stopBtn.disabled = isQueued;
+}
+
+function setPlatformBarState(platform, state) {
+    const dot = document.getElementById(`${platform}-page-dot`);
+    const label = document.getElementById(`${platform}-page-status`);
+
+    if (dot) {
+        if (state === 'running') dot.className = 'status-dot green';
+        else if (state === 'queued') dot.className = 'status-dot yellow';
+        else if (state === 'error') dot.className = 'status-dot red';
+        else dot.className = 'status-dot gray';
+    }
+
+    if (label) {
+        if (state === 'running') label.textContent = 'Bot Running';
+        else if (state === 'queued') label.textContent = 'Bot Queued';
+        else if (state === 'error') label.textContent = 'Bot Error';
+        else label.textContent = 'Bot Idle';
+    }
+
+    setControlButtons(platform, state);
+}
+
+async function refreshPlatformControlBar(platform) {
+    try {
+        const statuses = await apiFetch('/api/bot/status', { timeoutMs: 10000 });
+        const taskPrefix = `${platform}_`;
+        const relevant = Object.entries(statuses).filter(([taskId]) => taskId.startsWith(taskPrefix));
+        const states = relevant.map(([, state]) => state);
+
+        const hasRunning = states.includes('running');
+        const hasQueued = states.includes('queued');
+        const hasError = states.includes('error');
+
+        if (hasRunning) setPlatformBarState(platform, 'running');
+        else if (hasQueued) setPlatformBarState(platform, 'queued');
+        else if (hasError) setPlatformBarState(platform, 'error');
+        else setPlatformBarState(platform, 'idle');
+    } catch (e) {
+        console.error(`Failed to refresh ${platform} status:`, e);
+    }
+}
+
+function startPlatformStatusSync(platform) {
+    refreshPlatformControlBar(platform);
+    if (platformStatusInterval) clearInterval(platformStatusInterval);
+    platformStatusInterval = setInterval(() => refreshPlatformControlBar(platform), 4000);
 }
 
 async function loadSubreddits() {
@@ -524,19 +695,27 @@ async function startBot(platform) {
         if (data.proxy_warnings && data.proxy_warnings.length > 0) {
             data.proxy_warnings.forEach(w => showToast(`⚠️ ${w}`, 'warning'));
         }
+        refreshPlatformControlBar(platform);
     } catch (e) {
         showToast(`Failed: ${e.message}`, 'error');
+        refreshPlatformControlBar(platform);
     } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = `<i class="bi bi-play-fill"></i> Start Bot`; }
     }
 }
 
 async function stopBot(platform) {
+    const btn = document.getElementById(`${platform}-stop-btn`);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Stopping…'; }
     try {
         await apiFetch(`/api/bot/${platform}/stop`, { method: 'POST' });
         showToast(`${platform} bot stopped`, 'success');
+        refreshPlatformControlBar(platform);
     } catch (e) {
         showToast(`Failed: ${e.message}`, 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="bi bi-stop-fill"></i> Stop Bot`; }
+        refreshPlatformControlBar(platform);
     }
 }
 
@@ -548,6 +727,7 @@ async function initInstagramPage() {
     await loadSettings();
     await loadKeywords('instagram');
     initRangeSliders();
+    startPlatformStatusSync('instagram');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -558,6 +738,7 @@ async function initYouTubePage() {
     await loadSettings();
     await loadKeywords('youtube');
     initRangeSliders();
+    startPlatformStatusSync('youtube');
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -739,6 +920,8 @@ function updateRAMEstimate() {
 
 async function initLogsPage() {
     await loadLogs();
+    if (logsInterval) clearInterval(logsInterval);
+    logsInterval = setInterval(() => filterLogs(), 5000);
 }
 
 async function loadLogs(filters = {}) {

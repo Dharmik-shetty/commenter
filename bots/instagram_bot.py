@@ -6,6 +6,7 @@ Handles login, keyword search, and commenting through the browser.
 import logging
 import time
 import random
+from datetime import datetime, timedelta
 from threading import Event
 
 from bots.base_bot import BaseBot
@@ -253,17 +254,33 @@ def run_instagram_bot(stop_event: Event, account: dict, search_keywords: list[st
 
     bot = InstagramBot(account, headless=headless)
 
+    def emit_status(now_text: str, next_text: str = '', eta_seconds: float | None = None):
+        if not log_callback:
+            return
+        eta_text = ''
+        if eta_seconds is not None and eta_seconds > 0:
+            eta_at = datetime.now() + timedelta(seconds=eta_seconds)
+            eta_text = f" Next ETA: {int(eta_seconds)}s (~{eta_at.strftime('%H:%M:%S')})."
+        details = (next_text + eta_text).strip()
+        log_callback(
+            'instagram', account['username'], '', now_text, details,
+            'pending', '', 'system', None
+        )
+
     try:
         bot.launch_browser()
+        emit_status('Now: launching browser', 'Next: login to Instagram account')
 
         if not bot.login():
             logger.error(f"[Instagram] Cannot start - login failed for {account['username']}")
             return
+        emit_status('Now: logged in successfully', 'Next: search posts by configured keywords')
 
         # Wait for window
         wait_secs, window_duration = CommentScheduler.time_until_window(start_hour, end_hour)
         if wait_secs > 0:
             logger.info(f"[Instagram] Waiting {wait_secs:.0f}s for schedule window")
+            emit_status('Now: outside schedule window', 'Next: start posting when window opens', wait_secs)
             for _ in range(int(wait_secs)):
                 if stop_event.is_set():
                     return
@@ -294,6 +311,10 @@ def run_instagram_bot(stop_event: Event, account: dict, search_keywords: list[st
 
             logger.info(f"[Instagram] Round {current_round}: Searching posts "
                         f"(per_keyword={scaled_per_keyword}, need {remaining} more)")
+            emit_status(
+                f"Now: round {current_round} searching posts",
+                f"Next: allocate and post up to {remaining} comments"
+            )
 
             keyword_posts = {}
             for kw in search_keywords:
@@ -321,6 +342,10 @@ def run_instagram_bot(stop_event: Event, account: dict, search_keywords: list[st
                 continue
 
             logger.info(f"[Instagram] Round {current_round}: {total} comments allocated")
+            emit_status(
+                f"Now: {total} comments allocated in round {current_round}",
+                'Next: generate AI comments and post them'
+            )
 
             # --- Schedule and post ---
             _, window_remaining = CommentScheduler.time_until_window(start_hour, end_hour)
@@ -402,6 +427,11 @@ def run_instagram_bot(stop_event: Event, account: dict, search_keywords: list[st
 
                     if queue_index < len(delays):
                         delay = delays[queue_index]
+                        emit_status(
+                            f"Now: waiting before next Instagram comment ({kw})",
+                            'Next: open next post and submit generated comment',
+                            delay,
+                        )
                         for _ in range(int(delay)):
                             if stop_event.is_set():
                                 break
@@ -413,6 +443,10 @@ def run_instagram_bot(stop_event: Event, account: dict, search_keywords: list[st
 
         logger.info(f"[Instagram] Bot finished. {bot.comments_made}/{total_comments_target} comments "
                      f"by {account['username']} in {current_round} round(s)")
+        emit_status(
+            f"Now: run finished ({bot.comments_made}/{total_comments_target} comments)",
+            'Next: idle until next start request'
+        )
 
         if state_store and task_id:
             if stop_event.is_set():

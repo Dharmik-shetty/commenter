@@ -6,6 +6,7 @@ Main entry point with all routes and API endpoints.
 import os
 import json
 import logging
+from collections import deque
 from datetime import datetime, date
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for
@@ -438,6 +439,22 @@ def get_logs():
     return jsonify({'total': total, 'logs': [l.to_dict() for l in logs]})
 
 
+@app.route('/api/logs/system', methods=['GET'])
+def get_system_logs():
+    """Return tail lines from the backend log file (terminal-style view)."""
+    limit = request.args.get('limit', 200, type=int)
+    limit = max(20, min(limit, 2000))
+    log_path = os.path.join('data', 'bot.log')
+
+    if not os.path.exists(log_path):
+        return jsonify({'path': log_path, 'lines': []})
+
+    with open(log_path, 'r', encoding='utf-8', errors='replace') as f:
+        lines = [line.rstrip('\n') for line in deque(f, maxlen=limit)]
+
+    return jsonify({'path': log_path, 'lines': lines})
+
+
 @app.route('/api/logs/clear', methods=['POST'])
 def clear_logs():
     CommentLog.query.delete()
@@ -593,6 +610,10 @@ def start_reddit_bot():
         }
 
         process_state.mark_started(task_id, 'reddit', acc.username)
+        log_comment(
+            'reddit', acc.username, '', 'Bot start requested', '',
+            'pending', source='system'
+        )
 
         scheduler.start_task(
             task_id,
@@ -646,6 +667,10 @@ def stop_reddit_bot():
             process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
+            log_comment(
+                'reddit', acc.username, '', 'Bot stopped by user', '',
+                'skipped', source='system'
+            )
     db.session.commit()
     return jsonify({'stopped': stopped})
 
@@ -694,6 +719,10 @@ def start_instagram_bot():
         }
 
         process_state.mark_started(task_id, 'instagram', acc.username)
+        log_comment(
+            'instagram', acc.username, '', 'Bot start requested', '',
+            'pending', source='system'
+        )
 
         scheduler.start_task(
             task_id,
@@ -742,6 +771,10 @@ def stop_instagram_bot():
             process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
+            log_comment(
+                'instagram', acc.username, '', 'Bot stopped by user', '',
+                'skipped', source='system'
+            )
     db.session.commit()
     return jsonify({'stopped': stopped})
 
@@ -791,6 +824,10 @@ def start_youtube_bot():
         }
 
         process_state.mark_started(task_id, 'youtube', acc.username)
+        log_comment(
+            'youtube', acc.username, '', 'Bot start requested', '',
+            'pending', source='system'
+        )
 
         scheduler.start_task(
             task_id,
@@ -839,6 +876,10 @@ def stop_youtube_bot():
             process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
+            log_comment(
+                'youtube', acc.username, '', 'Bot stopped by user', '',
+                'skipped', source='system'
+            )
     db.session.commit()
     return jsonify({'stopped': stopped})
 
