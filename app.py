@@ -313,9 +313,17 @@ def get_keywords():
 @app.route('/api/keywords', methods=['POST'])
 def add_keyword():
     data = request.json
+    platform = data.get('platform', '').strip().lower()
+    raw_keyword = data.get('keyword', '').strip()
+
+    # Accept both hashtag and plain forms for Instagram.
+    keyword = raw_keyword.lstrip('#').strip() if platform == 'instagram' else raw_keyword
+    if not platform or not keyword:
+        return jsonify({'error': 'Platform and keyword are required'}), 400
+
     kw = Keyword(
-        platform=data['platform'],
-        keyword=data['keyword'].strip(),
+        platform=platform,
+        keyword=keyword,
     )
     db.session.add(kw)
     db.session.commit()

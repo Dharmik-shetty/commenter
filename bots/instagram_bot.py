@@ -88,7 +88,12 @@ class InstagramBot(BaseBot):
             List of post dicts with url and title keys
         """
         try:
-            search_url = f"{INSTAGRAM_URL}/explore/tags/{keyword.replace(' ', '')}/"
+            normalized_keyword = keyword.strip().lstrip('#').replace(' ', '')
+            if not normalized_keyword:
+                logger.warning("[Instagram] Empty keyword after normalization")
+                return []
+
+            search_url = f"{INSTAGRAM_URL}/explore/tags/{normalized_keyword}/"
             self.page.goto(search_url, wait_until='domcontentloaded', timeout=20000)
             self.human_delay(3, 5)
 
