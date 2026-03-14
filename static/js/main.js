@@ -167,7 +167,41 @@ function setTextById(id, text) {
 function initDashboard() {
     refreshStats();
     loadRecentLogs();
+    loadProcessStateSummary();
     statsInterval = setInterval(refreshStats, 5000);
+}
+
+async function loadProcessStateSummary() {
+    try {
+        const data = await apiFetch('/api/state/summary');
+        setTextById('state-task-count', data.task_count || 0);
+        setTextById('state-resumable-count', data.resumable_today || 0);
+    } catch (e) {
+        console.error('Load process state summary failed:', e);
+    }
+}
+
+async function clearProcessState() {
+    const btn = document.getElementById('confirm-clear-state-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span> Clearing…';
+    }
+
+    try {
+        await apiFetch('/api/state/clear', { method: 'POST' });
+        showToast('Process state cleared. New runs will start fresh.', 'success');
+        const modal = document.getElementById('clear-state-modal');
+        if (modal) modal.classList.remove('show');
+        loadProcessStateSummary();
+    } catch (e) {
+        showToast('Failed to clear state: ' + e.message, 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-trash"></i> Yes, Clear State';
+        }
+    }
 }
 
 async function loadRecentLogs() {
@@ -419,6 +453,7 @@ function saveAISettings() {
     saveSettings([
         'gemini_api_key', 'gemini_model', 'gemini_temperature',
         'gemini_max_tokens', 'gemini_top_p', 'gemini_top_k',
+        'gemini_batch_size', 'gemini_request_delay', 'gemini_batch_extra_prompt',
     ]);
 }
 

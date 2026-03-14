@@ -252,7 +252,10 @@ def run_youtube_bot(stop_event: Event, account: dict, search_keywords: list[str]
                     ai_generator, daily_limit: int = 1000,
                     min_delay: float = 30, max_delay: float = 120,
                     preprompt: str = '', start_hour: int = 7, end_hour: int = 23,
-                    headless: bool = True, log_callback=None):
+                    ai_batch_size: int = 3, ai_request_delay: float = 2.2,
+                    ai_batch_extra_prompt: str = '',
+                    headless: bool = True, log_callback=None,
+                    task_id: str = '', state_store=None):
     """
     Main run loop for a single YouTube account bot.
     """
@@ -278,10 +281,15 @@ def run_youtube_bot(stop_event: Event, account: dict, search_keywords: list[str]
                 time.sleep(1)
 
         # --- Scrape and comment in rounds until daily limit is hit ---
-        commented_urls = set()
+        resume_state = account.get('resume_state') or {}
+        commented_urls = set(resume_state.get('commented_urls', []))
         total_comments_target = daily_limit - account.get('comments_today', 0)
         max_rounds = 5
-        current_round = 0
+        current_round = int(resume_state.get('current_round', 0) or 0)
+
+        if commented_urls:
+            logger.info(f"[YouTube] Restored checkpoint for {account['username']}: "
+                        f"{len(commented_urls)} processed URLs, resuming from round {current_round + 1}")
 
         while bot.comments_made < total_comments_target and current_round < max_rounds:
             if stop_event.is_set():
@@ -289,6 +297,8 @@ def run_youtube_bot(stop_event: Event, account: dict, search_keywords: list[str]
 
             current_round += 1
             remaining = total_comments_target - bot.comments_made
+            if state_store and task_id:
+                state_store.checkpoint(task_id, current_round=current_round)
 
             # Scale up results per keyword on subsequent rounds
             scaled_per_keyword = max(5, (30 * current_round) // max(len(search_keywords), 1))
@@ -333,43 +343,80 @@ def run_youtube_bot(stop_event: Event, account: dict, search_keywords: list[str]
                     comment_queue.append((kw, video))
             random.shuffle(comment_queue)
 
-            for i, (kw, video) in enumerate(comment_queue):
+            for i in range(0, len(comment_queue), max(1, ai_batch_size)):
                 if stop_event.is_set():
                     break
 
-                try:
-                    # Navigate and get video info for AI context
-                    bot.page.goto(video['url'], wait_until='domcontentloaded', timeout=20000)
-                    bot.human_delay(2, 4)
-                    info = bot.get_video_info()
+                batch_pairs = comment_queue[i:i + max(1, ai_batch_size)]
+                batch_inputs = []
+                nav_failures = []
 
-                    comment = ai_generator.generate_comment(
-                        post_title=info.get('title', video['title']),
-                        post_description=info.get('description', ''),
+                for kw, video in batch_pairs:
+                    try:
+                        bot.page.goto(video['url'], wait_until='domcontentloaded', timeout=20000)
+                        bot.human_delay(2, 4)
+                        info = bot.get_video_info()
+                        batch_inputs.append({
+                            'title': info.get('title', video.get('title', kw)),
+                            'description': info.get('description', ''),
+                            'subreddit': '',
+                        })
+                        nav_failures.append('')
+                    except Exception as e:
+                        batch_inputs.append({'title': video.get('title', kw), 'description': '', 'subreddit': ''})
+                        nav_failures.append(str(e))
+
+                try:
+                    comments = ai_generator.generate_comments_batch(
+                        posts=batch_inputs,
                         preprompt=preprompt,
                         platform='youtube',
+                        extra_prompt=ai_batch_extra_prompt,
+                        min_request_interval=ai_request_delay,
                     )
                 except Exception as e:
-                    logger.error(f"[YouTube] AI generation failed: {e}")
+                    logger.error(f"[YouTube] Batch AI generation failed: {e}")
+                    comments = [''] * len(batch_pairs)
+
+                for offset, (kw, video) in enumerate(batch_pairs):
+                    if stop_event.is_set():
+                        break
+
+                    queue_index = i + offset
+                    if nav_failures[offset]:
+                        if log_callback:
+                            log_callback('youtube', account['username'], video['url'],
+                                         video['title'], '', 'failed', nav_failures[offset], kw, None)
+                        continue
+
+                    comment = comments[offset] if offset < len(comments) else ''
+                    if not comment.strip():
+                        if log_callback:
+                            log_callback('youtube', account['username'], video['url'],
+                                         video['title'], '', 'failed',
+                                         'AI batch response missing comment for video', kw, None)
+                        continue
+
+                    success = bot.post_comment(video['url'], comment)
+                    commented_urls.add(video.get('url', ''))
+                    if state_store and task_id:
+                        state_store.checkpoint(
+                            task_id,
+                            processed_url=video.get('url', ''),
+                            current_round=current_round,
+                        )
+                    status = 'success' if success else 'failed'
+
                     if log_callback:
                         log_callback('youtube', account['username'], video['url'],
-                                     video['title'], '', 'failed', str(e), kw, None)
-                    continue
+                                     video['title'], comment, status, '', kw, None)
 
-                success = bot.post_comment(video['url'], comment)
-                commented_urls.add(video.get('url', ''))
-                status = 'success' if success else 'failed'
-
-                if log_callback:
-                    log_callback('youtube', account['username'], video['url'],
-                                 video['title'], comment, status, '', kw, None)
-
-                if i < len(delays):
-                    delay = delays[i]
-                    for _ in range(int(delay)):
-                        if stop_event.is_set():
-                            break
-                        time.sleep(1)
+                    if queue_index < len(delays):
+                        delay = delays[queue_index]
+                        for _ in range(int(delay)):
+                            if stop_event.is_set():
+                                break
+                            time.sleep(1)
 
             if bot.comments_made < total_comments_target and not stop_event.is_set():
                 logger.info(f"[YouTube] {bot.comments_made}/{total_comments_target} comments done, "
@@ -378,7 +425,15 @@ def run_youtube_bot(stop_event: Event, account: dict, search_keywords: list[str]
         logger.info(f"[YouTube] Bot finished. {bot.comments_made}/{total_comments_target} comments "
                      f"by {account['username']} in {current_round} round(s)")
 
+        if state_store and task_id:
+            if stop_event.is_set():
+                state_store.mark_stopped(task_id, 'stopped')
+            else:
+                state_store.mark_completed(task_id)
+
     except Exception as e:
         logger.error(f"[YouTube] Bot error for {account['username']}: {e}", exc_info=True)
+        if state_store and task_id:
+            state_store.mark_error(task_id, str(e))
     finally:
         bot.close_browser()

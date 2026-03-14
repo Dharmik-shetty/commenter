@@ -28,6 +28,7 @@
                 <div class="form-group">
                     <label class="form-label">Model</label>
                     <select class="form-control" id="setting-gemini_model">
+                        <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite</option>
                         <option value="gemini-2.0-flash">Gemini 2.0 Flash (Recommended)</option>
                         <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite</option>
                         <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
@@ -83,6 +84,38 @@
                                min="1" max="100" step="1" value="40" style="width:140px">
                         <span class="range-value" id="setting-gemini_top_k-value">40</span>
                     </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Posts Per AI Request</div>
+                        <div class="setting-desc">Batch size for multi-comment generation (higher = fewer API calls)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_batch_size"
+                               min="1" max="10" step="1" value="3" style="width:140px">
+                        <span class="range-value" id="setting-gemini_batch_size-value">3</span>
+                    </div>
+                </div>
+
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Delay Between AI Requests (sec)</div>
+                        <div class="setting-desc">Helps stay within RPM limits (30 RPM ~= at least 2.0s)</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" class="form-range" id="setting-gemini_request_delay"
+                               min="0" max="10" step="0.1" value="2.2" style="width:140px">
+                        <span class="range-value" id="setting-gemini_request_delay-value">2.2</span>
+                    </div>
+                </div>
+
+                <div class="form-group mt-12" style="margin-bottom:0;">
+                    <label class="form-label">Batch Extra Prompt</label>
+                    <textarea class="form-control" id="setting-gemini_batch_extra_prompt" rows="3"
+                              placeholder="Extra instruction for batch generation and output structure..."></textarea>
                 </div>
 
                 <div class="mt-20">

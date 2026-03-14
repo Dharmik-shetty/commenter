@@ -179,4 +179,66 @@
         </div>
     </div>
 </div>
+
+<div class="card mt-24">
+    <div class="card-header">
+        <h3><i class="bi bi-hdd-stack" style="margin-right:8px;color:var(--info)"></i>Process State</h3>
+        <span style="font-size:12px;color:var(--text-muted)">Crash-safe resume checkpoints</span>
+    </div>
+    <div class="card-body">
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Saved Tasks</div>
+                <div class="setting-desc">Total task checkpoints currently stored.</div>
+            </div>
+            <div class="setting-control">
+                <strong id="state-task-count">0</strong>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Resumable Today</div>
+                <div class="setting-desc">Tasks with checkpoints from the current UTC day.</div>
+            </div>
+            <div class="setting-control">
+                <strong id="state-resumable-count">0</strong>
+            </div>
+        </div>
+        <div class="setting-row">
+            <div>
+                <div class="setting-label">Reset Saved State</div>
+                <div class="setting-desc">Clears all checkpoints and starts future runs from a fresh state.</div>
+            </div>
+            <div class="setting-control">
+                <button class="btn btn-danger" data-modal="clear-state-modal">
+                    <i class="bi bi-trash"></i> Clear State
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="clear-state-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3><i class="bi bi-exclamation-triangle" style="margin-right:8px;color:var(--warning)"></i>Clear Process State?</h3>
+            <button class="modal-close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="color:var(--text-secondary);line-height:1.7;">
+                This will permanently remove all saved bot checkpoints.
+                Future runs will not resume from previous progress.
+            </p>
+            <p style="margin-top:10px;color:var(--danger);font-weight:600;">
+                Make sure all bots are stopped before clearing state.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-cancel">Cancel</button>
+            <button class="btn btn-danger" id="confirm-clear-state-btn" onclick="clearProcessState()">
+                <i class="bi bi-trash"></i> Yes, Clear State
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

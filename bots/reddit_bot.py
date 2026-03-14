@@ -265,9 +265,11 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
                    daily_limit: int = 1000, min_delay: float = 30,
                    max_delay: float = 120, sort_method: str = 'hot',
                    posts_per_visit: int = 20, match_threshold: float = 0.45,
+                   preprompt: str = '', ai_batch_size: int = 3,
+                   ai_request_delay: float = 2.2, ai_batch_extra_prompt: str = '',
                    start_hour: int = 7, end_hour: int = 23,
                    headless: bool = True, db_session=None,
-                   log_callback=None):
+                   log_callback=None, task_id: str = '', state_store=None):
     """
     Main run loop for a single Reddit account bot instance.
     Called by the scheduler in a separate thread.
@@ -294,12 +296,17 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
                 time.sleep(1)
 
         # Track all URLs we've already commented on to avoid duplicates
-        commented_urls = set()
+        resume_state = account.get('resume_state') or {}
+        commented_urls = set(resume_state.get('commented_urls', []))
         total_comments_target = daily_limit - account.get('comments_today', 0)
         sort_methods_cycle = ['hot', 'new', 'rising', 'top']
         max_rounds = 5  # Safety cap to prevent infinite loops
-        current_round = 0
+        current_round = int(resume_state.get('current_round', 0) or 0)
         current_match_threshold = match_threshold
+
+        if commented_urls:
+            logger.info(f"[Reddit] Restored checkpoint for {account['username']}: "
+                        f"{len(commented_urls)} processed URLs, resuming from round {current_round + 1}")
 
         while bot.comments_made < total_comments_target and current_round < max_rounds:
             if stop_event.is_set():
@@ -307,6 +314,8 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
             current_round += 1
             remaining = total_comments_target - bot.comments_made
+            if state_store and task_id:
+                state_store.checkpoint(task_id, current_round=current_round)
 
             # --- Phase 1: Scrape and match posts ---
             # On subsequent rounds, try different sort methods and fetch more posts
@@ -378,48 +387,71 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
 
             random.shuffle(comment_queue)
 
-            for i, (sub_name, post) in enumerate(comment_queue):
+            for i in range(0, len(comment_queue), max(1, ai_batch_size)):
                 if stop_event.is_set():
                     logger.info(f"[Reddit] Bot stopped by user")
                     break
 
-                # Generate comment with AI
+                batch_pairs = comment_queue[i:i + max(1, ai_batch_size)]
+                batch_inputs = []
+                for sub_name, post in batch_pairs:
+                    batch_inputs.append({
+                        'title': post.get('title', ''),
+                        'description': post.get('description', ''),
+                        'subreddit': sub_name,
+                    })
+
                 try:
-                    comment = ai_generator.generate_comment(
-                        post_title=post['title'],
-                        post_description=post.get('description', ''),
+                    comments = ai_generator.generate_comments_batch(
+                        posts=batch_inputs,
+                        preprompt=preprompt,
                         platform='reddit',
-                        subreddit=sub_name,
+                        extra_prompt=ai_batch_extra_prompt,
+                        min_request_interval=ai_request_delay,
                     )
                 except Exception as e:
-                    logger.error(f"[Reddit] AI generation failed: {e}")
+                    logger.error(f"[Reddit] Batch AI generation failed: {e}")
+                    comments = [''] * len(batch_pairs)
+
+                for offset, (sub_name, post) in enumerate(batch_pairs):
+                    if stop_event.is_set():
+                        break
+
+                    queue_index = i + offset
+                    comment = comments[offset] if offset < len(comments) else ''
+                    if not comment.strip():
+                        err = 'AI batch response missing comment for post'
+                        if log_callback:
+                            log_callback('reddit', account['username'], post.get('url', ''),
+                                         post.get('title', ''), '', 'failed', err, sub_name,
+                                         post.get('match_score'))
+                        continue
+
+                    success = bot.post_comment(post['url'], comment)
+                    commented_urls.add(post.get('url', ''))
+                    if state_store and task_id:
+                        state_store.checkpoint(
+                            task_id,
+                            processed_url=post.get('url', ''),
+                            current_round=current_round,
+                        )
+
+                    status = 'success' if success else 'failed'
                     if log_callback:
                         log_callback('reddit', account['username'], post.get('url', ''),
-                                     post['title'], '', 'failed', str(e), sub_name,
+                                     post['title'], comment, status, '', sub_name,
                                      post.get('match_score'))
-                    continue
 
-                # Post the comment
-                success = bot.post_comment(post['url'], comment)
-                commented_urls.add(post.get('url', ''))
-
-                status = 'success' if success else 'failed'
-                if log_callback:
-                    log_callback('reddit', account['username'], post.get('url', ''),
-                                 post['title'], comment, status, '', sub_name,
-                                 post.get('match_score'))
-
-                # Wait with human-like delay
-                if i < len(delays):
-                    delay = delays[i]
-                    logger.debug(f"[Reddit] Waiting {delay:.1f}s before next comment")
-                    for _ in range(int(delay)):
-                        if stop_event.is_set():
-                            break
-                        time.sleep(1)
-                    remaining_frac = delay - int(delay)
-                    if remaining_frac > 0:
-                        time.sleep(remaining_frac)
+                    if queue_index < len(delays):
+                        delay = delays[queue_index]
+                        logger.debug(f"[Reddit] Waiting {delay:.1f}s before next comment")
+                        for _ in range(int(delay)):
+                            if stop_event.is_set():
+                                break
+                            time.sleep(1)
+                        remaining_frac = delay - int(delay)
+                        if remaining_frac > 0:
+                            time.sleep(remaining_frac)
 
             if bot.comments_made < total_comments_target and not stop_event.is_set():
                 logger.info(f"[Reddit] {bot.comments_made}/{total_comments_target} comments done, "
@@ -430,7 +462,15 @@ def run_reddit_bot(stop_event: Event, account: dict, subreddits: list[dict],
         logger.info(f"[Reddit] Bot finished. {bot.comments_made}/{total_comments_target} comments "
                      f"posted by {account['username']} in {current_round} round(s)")
 
+        if state_store and task_id:
+            if stop_event.is_set():
+                state_store.mark_stopped(task_id, 'stopped')
+            else:
+                state_store.mark_completed(task_id)
+
     except Exception as e:
         logger.error(f"[Reddit] Bot error for {account['username']}: {e}", exc_info=True)
+        if state_store and task_id:
+            state_store.mark_error(task_id, str(e))
     finally:
         bot.close_browser()

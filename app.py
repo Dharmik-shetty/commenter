@@ -16,6 +16,7 @@ from models import db, Account, Subreddit, Keyword, CommentLog, BotSettings, Bot
 from core.gemini_ai import GeminiAI
 from core.semantic_matcher import SemanticMatcher
 from core.scheduler import CommentScheduler
+from core.process_state import ProcessStateStore
 
 # ---------------------------------------------------------------------------
 # Logging setup
@@ -59,6 +60,7 @@ gemini_ai = GeminiAI(
 
 semantic_matcher = SemanticMatcher(model_name=Config.SEMANTIC_MODEL)
 scheduler = CommentScheduler()
+process_state = ProcessStateStore()
 
 # ---------------------------------------------------------------------------
 # Helper: log a comment to DB and emit via WebSocket
@@ -341,6 +343,9 @@ def get_settings():
         'gemini_max_tokens': str(Config.GEMINI_MAX_TOKENS),
         'gemini_top_p': str(Config.GEMINI_TOP_P),
         'gemini_top_k': str(Config.GEMINI_TOP_K),
+        'gemini_batch_size': str(Config.GEMINI_BATCH_SIZE),
+        'gemini_request_delay': str(Config.GEMINI_REQUEST_DELAY),
+        'gemini_batch_extra_prompt': Config.GEMINI_BATCH_EXTRA_PROMPT,
         'reddit_preprompt': Config.DEFAULT_PREPROMPT,
         'instagram_preprompt': Config.INSTAGRAM_PREPROMPT,
         'youtube_preprompt': Config.YOUTUBE_PREPROMPT,
@@ -432,6 +437,21 @@ def clear_logs():
     return jsonify({'status': 'cleared'})
 
 
+@app.route('/api/state/summary', methods=['GET'])
+def state_summary():
+    return jsonify(process_state.summary())
+
+
+@app.route('/api/state/clear', methods=['POST'])
+def clear_process_state():
+    if scheduler.active_count() > 0:
+        return jsonify({'error': 'Stop all running bots before clearing process state'}), 409
+
+    process_state.clear()
+    logger.info('Process state cleared by user')
+    return jsonify({'status': 'cleared'})
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # BOT CONTROL API
 # ═══════════════════════════════════════════════════════════════════════════
@@ -453,6 +473,23 @@ def _apply_concurrency_settings():
     max_concurrent = int(BotSettings.get('max_concurrent', Config.DEFAULT_MAX_CONCURRENT))
     scheduler.set_concurrency_limit(max_concurrent)
     return max_concurrent
+
+
+def _get_ai_batch_settings():
+    """Load Gemini batching/rate-limit settings from DB."""
+    batch_size = int(BotSettings.get('gemini_batch_size', Config.GEMINI_BATCH_SIZE))
+    request_delay = float(BotSettings.get('gemini_request_delay', Config.GEMINI_REQUEST_DELAY))
+    extra_prompt = BotSettings.get('gemini_batch_extra_prompt', Config.GEMINI_BATCH_EXTRA_PROMPT)
+
+    # Keep values in a safe range.
+    batch_size = max(1, min(batch_size, 20))
+    request_delay = max(0.0, min(request_delay, 60.0))
+
+    return {
+        'batch_size': batch_size,
+        'request_delay': request_delay,
+        'extra_prompt': extra_prompt,
+    }
 
 
 def _get_platform_concurrency(platform):
@@ -523,6 +560,7 @@ def start_reddit_bot():
 
     settings = _get_platform_settings('reddit')
     preprompt = BotSettings.get('reddit_preprompt', Config.DEFAULT_PREPROMPT)
+    ai_batch = _get_ai_batch_settings()
     sort_method = BotSettings.get('reddit_sort_method', Config.DEFAULT_SORT_METHOD)
     match_threshold = float(BotSettings.get('reddit_match_threshold', Config.DEFAULT_MATCH_THRESHOLD))
     posts_per_visit = int(BotSettings.get('reddit_posts_per_visit', Config.DEFAULT_POSTS_PER_VISIT))
@@ -546,11 +584,16 @@ def start_reddit_bot():
             'proxy': acc.proxy,
             'user_agent': acc.user_agent,
             'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
         }
+
+        process_state.mark_started(task_id, 'reddit', acc.username)
 
         scheduler.start_task(
             task_id,
             run_reddit_bot,
+            task_id=task_id,
+            state_store=process_state,
             account=acc_dict,
             subreddits=sub_configs,
             keywords=keyword_list,
@@ -559,6 +602,10 @@ def start_reddit_bot():
             daily_limit=settings['daily_limit'],
             min_delay=settings['min_delay'],
             max_delay=settings['max_delay'],
+            preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
             sort_method=sort_method,
             posts_per_visit=posts_per_visit,
             match_threshold=match_threshold,
@@ -591,6 +638,7 @@ def stop_reddit_bot():
         task_id = f"reddit_{acc.username}"
         if scheduler.is_running(task_id):
             scheduler.stop_task(task_id)
+            process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
     db.session.commit()
@@ -619,6 +667,7 @@ def start_instagram_bot():
 
     settings = _get_platform_settings('instagram')
     preprompt = BotSettings.get('instagram_preprompt', Config.INSTAGRAM_PREPROMPT)
+    ai_batch = _get_ai_batch_settings()
 
     started = []
     queued = []
@@ -636,11 +685,16 @@ def start_instagram_bot():
             'proxy': acc.proxy,
             'user_agent': acc.user_agent,
             'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
         }
+
+        process_state.mark_started(task_id, 'instagram', acc.username)
 
         scheduler.start_task(
             task_id,
             run_instagram_bot,
+            task_id=task_id,
+            state_store=process_state,
             account=acc_dict,
             search_keywords=keyword_list,
             ai_generator=gemini_ai,
@@ -648,6 +702,9 @@ def start_instagram_bot():
             min_delay=settings['min_delay'],
             max_delay=settings['max_delay'],
             preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
             start_hour=settings['start_hour'],
             end_hour=settings['end_hour'],
             headless=settings['headless'],
@@ -677,6 +734,7 @@ def stop_instagram_bot():
         task_id = f"instagram_{acc.username}"
         if scheduler.is_running(task_id):
             scheduler.stop_task(task_id)
+            process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
     db.session.commit()
@@ -705,6 +763,7 @@ def start_youtube_bot():
 
     settings = _get_platform_settings('youtube')
     preprompt = BotSettings.get('youtube_preprompt', Config.YOUTUBE_PREPROMPT)
+    ai_batch = _get_ai_batch_settings()
 
     started = []
     queued = []
@@ -723,11 +782,16 @@ def start_youtube_bot():
             'proxy': acc.proxy,
             'user_agent': acc.user_agent,
             'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
         }
+
+        process_state.mark_started(task_id, 'youtube', acc.username)
 
         scheduler.start_task(
             task_id,
             run_youtube_bot,
+            task_id=task_id,
+            state_store=process_state,
             account=acc_dict,
             search_keywords=keyword_list,
             ai_generator=gemini_ai,
@@ -735,6 +799,9 @@ def start_youtube_bot():
             min_delay=settings['min_delay'],
             max_delay=settings['max_delay'],
             preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
             start_hour=settings['start_hour'],
             end_hour=settings['end_hour'],
             headless=settings['headless'],
@@ -764,6 +831,7 @@ def stop_youtube_bot():
         task_id = f"youtube_{acc.username}"
         if scheduler.is_running(task_id):
             scheduler.stop_task(task_id)
+            process_state.mark_stopped(task_id, 'manual stop')
             acc.status = 'idle'
             stopped.append(acc.username)
     db.session.commit()
@@ -799,6 +867,9 @@ def start_all_bots():
 
 @app.route('/api/bot/stop-all', methods=['POST'])
 def stop_all_bots():
+    for task_id, status in scheduler.get_all_statuses().items():
+        if status in ('running', 'queued'):
+            process_state.mark_stopped(task_id, 'stop all')
     scheduler.stop_all()
     Account.query.update({'status': 'idle'})
     db.session.commit()
@@ -810,6 +881,219 @@ def bot_status():
     return jsonify(scheduler.get_all_statuses())
 
 
+def _start_task_for_recovery(platform: str, username: str) -> bool:
+    """Start one account task for crash recovery using current settings."""
+    if platform == 'reddit':
+        from bots.reddit_bot import run_reddit_bot
+
+        acc = Account.query.filter_by(platform='reddit', username=username, is_active=True).first()
+        if not acc:
+            logger.warning(f"[Recovery] Skip reddit/{username}: account missing or inactive")
+            return False
+
+        subreddits = Subreddit.query.filter_by(is_active=True).all()
+        if not subreddits:
+            logger.warning(f"[Recovery] Skip reddit/{username}: no active subreddits")
+            return False
+
+        keywords_db = Keyword.query.filter_by(platform='reddit', is_active=True).all()
+        keyword_list = [k.keyword for k in keywords_db]
+        if keyword_list:
+            semantic_matcher.set_keywords(keyword_list)
+
+        settings = _get_platform_settings('reddit')
+        ai_batch = _get_ai_batch_settings()
+        preprompt = BotSettings.get('reddit_preprompt', Config.DEFAULT_PREPROMPT)
+        sort_method = BotSettings.get('reddit_sort_method', Config.DEFAULT_SORT_METHOD)
+        match_threshold = float(BotSettings.get('reddit_match_threshold', Config.DEFAULT_MATCH_THRESHOLD))
+        posts_per_visit = int(BotSettings.get('reddit_posts_per_visit', Config.DEFAULT_POSTS_PER_VISIT))
+        sub_configs = [s.to_dict() for s in subreddits]
+
+        task_id = f"reddit_{acc.username}"
+        if scheduler.is_running(task_id):
+            return False
+
+        acc.status = 'running'
+        db.session.commit()
+
+        acc_dict = {
+            'username': acc.username,
+            'password': acc.password,
+            'proxy': acc.proxy,
+            'user_agent': acc.user_agent,
+            'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
+        }
+        process_state.mark_started(task_id, 'reddit', acc.username)
+
+        return scheduler.start_task(
+            task_id,
+            run_reddit_bot,
+            task_id=task_id,
+            state_store=process_state,
+            account=acc_dict,
+            subreddits=sub_configs,
+            keywords=keyword_list,
+            ai_generator=gemini_ai,
+            semantic_matcher=semantic_matcher if keyword_list else None,
+            daily_limit=settings['daily_limit'],
+            min_delay=settings['min_delay'],
+            max_delay=settings['max_delay'],
+            preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
+            sort_method=sort_method,
+            posts_per_visit=posts_per_visit,
+            match_threshold=match_threshold,
+            start_hour=settings['start_hour'],
+            end_hour=settings['end_hour'],
+            headless=settings['headless'],
+            log_callback=log_comment,
+        )
+
+    if platform == 'instagram':
+        from bots.instagram_bot import run_instagram_bot
+
+        acc = Account.query.filter_by(platform='instagram', username=username, is_active=True).first()
+        if not acc:
+            logger.warning(f"[Recovery] Skip instagram/{username}: account missing or inactive")
+            return False
+
+        keywords_db = Keyword.query.filter_by(platform='instagram', is_active=True).all()
+        keyword_list = [k.keyword for k in keywords_db]
+        if not keyword_list:
+            logger.warning(f"[Recovery] Skip instagram/{username}: no active keywords")
+            return False
+
+        settings = _get_platform_settings('instagram')
+        ai_batch = _get_ai_batch_settings()
+        preprompt = BotSettings.get('instagram_preprompt', Config.INSTAGRAM_PREPROMPT)
+        task_id = f"instagram_{acc.username}"
+        if scheduler.is_running(task_id):
+            return False
+
+        acc.status = 'running'
+        db.session.commit()
+
+        acc_dict = {
+            'username': acc.username,
+            'password': acc.password,
+            'proxy': acc.proxy,
+            'user_agent': acc.user_agent,
+            'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
+        }
+        process_state.mark_started(task_id, 'instagram', acc.username)
+
+        return scheduler.start_task(
+            task_id,
+            run_instagram_bot,
+            task_id=task_id,
+            state_store=process_state,
+            account=acc_dict,
+            search_keywords=keyword_list,
+            ai_generator=gemini_ai,
+            daily_limit=settings['daily_limit'],
+            min_delay=settings['min_delay'],
+            max_delay=settings['max_delay'],
+            preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
+            start_hour=settings['start_hour'],
+            end_hour=settings['end_hour'],
+            headless=settings['headless'],
+            log_callback=log_comment,
+        )
+
+    if platform == 'youtube':
+        from bots.youtube_bot import run_youtube_bot
+
+        acc = Account.query.filter_by(platform='youtube', username=username, is_active=True).first()
+        if not acc:
+            logger.warning(f"[Recovery] Skip youtube/{username}: account missing or inactive")
+            return False
+
+        keywords_db = Keyword.query.filter_by(platform='youtube', is_active=True).all()
+        keyword_list = [k.keyword for k in keywords_db]
+        if not keyword_list:
+            logger.warning(f"[Recovery] Skip youtube/{username}: no active keywords")
+            return False
+
+        settings = _get_platform_settings('youtube')
+        ai_batch = _get_ai_batch_settings()
+        preprompt = BotSettings.get('youtube_preprompt', Config.YOUTUBE_PREPROMPT)
+        task_id = f"youtube_{acc.username}"
+        if scheduler.is_running(task_id):
+            return False
+
+        acc.status = 'running'
+        db.session.commit()
+
+        acc_dict = {
+            'username': acc.username,
+            'password': acc.password,
+            'email': acc.email,
+            'proxy': acc.proxy,
+            'user_agent': acc.user_agent,
+            'comments_today': acc.comments_today,
+            'resume_state': process_state.get_resume_state(task_id),
+        }
+        process_state.mark_started(task_id, 'youtube', acc.username)
+
+        return scheduler.start_task(
+            task_id,
+            run_youtube_bot,
+            task_id=task_id,
+            state_store=process_state,
+            account=acc_dict,
+            search_keywords=keyword_list,
+            ai_generator=gemini_ai,
+            daily_limit=settings['daily_limit'],
+            min_delay=settings['min_delay'],
+            max_delay=settings['max_delay'],
+            preprompt=preprompt,
+            ai_batch_size=ai_batch['batch_size'],
+            ai_request_delay=ai_batch['request_delay'],
+            ai_batch_extra_prompt=ai_batch['extra_prompt'],
+            start_hour=settings['start_hour'],
+            end_hour=settings['end_hour'],
+            headless=settings['headless'],
+            log_callback=log_comment,
+        )
+
+    logger.warning(f"[Recovery] Unsupported platform for recovery: {platform}")
+    return False
+
+
+def _auto_resume_crashed_tasks():
+    """Resume tasks that were running when the previous server process crashed."""
+    if os.environ.get('WERKZEUG_RUN_MAIN') not in (None, 'true'):
+        return
+
+    with app.app_context():
+        _apply_concurrency_settings()
+        resumable = process_state.get_crash_resumable_tasks()
+        if not resumable:
+            return
+
+        started = 0
+        for task in resumable:
+            platform = (task.get('platform') or '').strip().lower()
+            username = (task.get('username') or '').strip()
+            if not platform or not username:
+                continue
+            try:
+                if _start_task_for_recovery(platform, username):
+                    started += 1
+            except Exception as e:
+                logger.error(f"[Recovery] Failed to resume {platform}/{username}: {e}", exc_info=True)
+
+        if started:
+            logger.info(f"[Recovery] Auto-resumed {started} interrupted task(s)")
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # WEBSOCKET
 # ═══════════════════════════════════════════════════════════════════════════
@@ -817,6 +1101,9 @@ def bot_status():
 @socketio.on('connect')
 def on_connect():
     logger.debug('WebSocket client connected')
+
+
+_auto_resume_crashed_tasks()
 
 
 # ═══════════════════════════════════════════════════════════════════════════
