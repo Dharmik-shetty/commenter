@@ -38,9 +38,40 @@ async function apiFetch(path, options = {}) {
 
     try {
         const res = await fetch(API + path, { ...defaults, ...fetchOptions });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Request failed');
-        return data;
+        const rawText = await res.text();
+        const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
+        let data = null;
+        if (contentType.includes('application/json')) {
+            try {
+                data = rawText ? JSON.parse(rawText) : {};
+            } catch {
+                data = null;
+            }
+        }
+
+        if (!res.ok) {
+            const serverMsg = data?.error || data?.message;
+            if (serverMsg) throw new Error(serverMsg);
+
+            if (contentType.includes('text/html')) {
+                throw new Error(`Server error (${res.status}). Check backend logs.`);
+            }
+
+            const fallback = rawText ? rawText.trim().slice(0, 180) : `HTTP ${res.status}`;
+            throw new Error(fallback);
+        }
+
+        // Some endpoints may return empty bodies on success.
+        if (!rawText) return {};
+
+        // Parse JSON response when possible, otherwise return a wrapped text payload.
+        if (data !== null) return data;
+        try {
+            return JSON.parse(rawText);
+        } catch {
+            return { message: rawText };
+        }
     } catch (err) {
         if (err && err.name === 'AbortError') {
             throw new Error('Request timed out. Check server logs and try again.');
