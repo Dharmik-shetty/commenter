@@ -68,6 +68,7 @@ process_state = ProcessStateStore()
 # ---------------------------------------------------------------------------
 def log_comment(platform, username, post_url, post_title, comment_text,
                 status, error='', source='', match_score=None):
+    payload = None
     with app.app_context():
         entry = CommentLog(
             platform=platform,
@@ -82,6 +83,10 @@ def log_comment(platform, username, post_url, post_title, comment_text,
             match_score=match_score,
         )
         db.session.add(entry)
+        db.session.flush()  # Ensure PK/defaults exist before serializing.
+
+        # Build payload while instance is session-bound to avoid detached errors.
+        payload = entry.to_dict()
 
         # Update account comment count
         acc = Account.query.filter_by(platform=platform, username=username).first()
@@ -95,7 +100,8 @@ def log_comment(platform, username, post_url, post_title, comment_text,
             db.session.commit()
 
     # Real-time push to dashboard
-    socketio.emit('new_log', entry.to_dict())
+    if payload:
+        socketio.emit('new_log', payload)
 
 
 # ═══════════════════════════════════════════════════════════════════════════

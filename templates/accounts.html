@@ -142,4 +142,35 @@
         </div>
     </div>
 </div>
+
+<!-- ═══ EDIT PROXY MODAL ═══ -->
+<div class="modal-overlay" id="edit-proxy-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Edit Account Proxy</h3>
+            <button class="modal-close"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit-proxy-account-id">
+            <div class="form-group">
+                <label class="form-label">Account</label>
+                <input type="text" class="form-control" id="edit-proxy-account-label" disabled>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Proxy URL</label>
+                <input type="text" class="form-control" id="edit-proxy-value"
+                       placeholder="http://user:pass@host:port or socks5://user:pass@host:port">
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:6px;">
+                Leave empty to remove proxy and use server IP.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline modal-cancel">Cancel</button>
+            <button class="btn btn-primary" onclick="saveAccountProxy()">
+                <i class="bi bi-save"></i> Save Proxy
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}

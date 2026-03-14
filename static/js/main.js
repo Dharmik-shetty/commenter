@@ -786,6 +786,15 @@ function renderAccountTable(platform, accounts) {
                         <input type="checkbox" ${a.is_active ? 'checked' : ''} onchange="toggleAccount(${a.id}, this.checked)">
                         <span class="slider"></span>
                     </label>
+                    <button class="btn-icon"
+                        data-account-id="${a.id}"
+                        data-platform="${platform}"
+                        data-username="${encodeURIComponent(a.username || '')}"
+                        data-proxy="${encodeURIComponent(a.proxy || '')}"
+                        onclick="openProxyEditorFromBtn(this)"
+                        title="Edit proxy">
+                        <i class="bi bi-pencil"></i>
+                    </button>
                     <button class="btn-icon" onclick="deleteAccount(${a.id})" title="Delete">
                         <i class="bi bi-trash"></i>
                     </button>
@@ -833,6 +842,53 @@ async function toggleAccount(id, active) {
             body: JSON.stringify({ is_active: active }),
         });
     } catch (e) { showToast(e.message, 'error'); }
+}
+
+function openProxyEditorFromBtn(btn) {
+    if (!btn) return;
+    const accountId = btn.dataset.accountId;
+    const platform = btn.dataset.platform || '';
+    const username = decodeURIComponent(btn.dataset.username || '');
+    const proxy = decodeURIComponent(btn.dataset.proxy || '');
+
+    const idInput = document.getElementById('edit-proxy-account-id');
+    const labelInput = document.getElementById('edit-proxy-account-label');
+    const proxyInput = document.getElementById('edit-proxy-value');
+    const modal = document.getElementById('edit-proxy-modal');
+
+    if (!idInput || !labelInput || !proxyInput || !modal) return;
+
+    idInput.value = accountId;
+    labelInput.value = `${platform}/${username}`;
+    proxyInput.value = proxy;
+    modal.classList.add('show');
+}
+
+async function saveAccountProxy() {
+    const idInput = document.getElementById('edit-proxy-account-id');
+    const proxyInput = document.getElementById('edit-proxy-value');
+    const modal = document.getElementById('edit-proxy-modal');
+
+    if (!idInput || !proxyInput || !modal) return;
+
+    const id = idInput.value;
+    const proxy = proxyInput.value.trim();
+    if (!id) {
+        showToast('Missing account id', 'error');
+        return;
+    }
+
+    try {
+        await apiFetch(`/api/accounts/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify({ proxy }),
+        });
+        showToast('Proxy updated', 'success');
+        modal.classList.remove('show');
+        loadAllAccounts();
+    } catch (e) {
+        showToast('Failed to update proxy: ' + e.message, 'error');
+    }
 }
 
 async function deleteAccount(id) {
