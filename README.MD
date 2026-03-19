@@ -70,7 +70,7 @@ Note: If you see a `reddit_scraper.py` file in your directory, it's from the old
 
 1. Enter your Reddit username and password
 2. Add subreddits you want to scrape
-3. Configure scraping settings (max articles, comments, etc.)
+3. Configure scraping settings (posts to check, max comments per day, etc.)
 4. Click "Start Scraping, Generating and Reviewing Comments"
 5. Review and select AI-generated comments
 6. The application will post selected comments to Reddit

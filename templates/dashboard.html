@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reddit AI Dashboard</title>
+    <!-- Use Bootstrap or simple CSS for dashboard -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body { background-color: #f8f9fa; }
+        .log-container { height: 300px; overflow-y: scroll; background: #212529; color: #32cd32; padding: 10px; font-family: monospace; }
+        #resultsTable { font-size: 0.9em; }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h2>Reddit AI Commenter Pro - Dashboard</h2>
+    <div class="row">
+        <!-- Settings -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Targeting Settings</div>
+                <div class="card-body">
+                    <form id="settingsForm">
+                        <div class="mb-3">
+                            <label>Subreddits (comma separated)</label>
+                            <input type="text" id="subreddits" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Max Comments per Day (per account)</label>
+                            <input type="number" id="main_max_comments_per_day" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Posts to Check per Subreddit</label>
+                            <input type="number" id="main_posts_to_check" class="form-control" min="0" />
+                        </div>
+                        <div class="mb-3">
+                            <label>Concurrent Accounts to Run</label>
+                            <input type="number" id="concurrent_accounts" class="form-control" value="1" min="1" />
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                        <button type="button" class="btn btn-secondary ms-2" data-bs-toggle="modal" data-bs-target="#advancedSettingsModal">Advanced & Schedule Settings</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">Accounts Management</div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Password</th>
+                                <th>Proxy (host:port:user:pass)</th>
+                                <th>Active</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountsBody">
+                        </tbody>
+                    </table>
+                    <button class="btn btn-sm btn-success" onclick="addAccountRow()">+ Add Account</button>
+                    <button class="btn btn-sm btn-primary ms-2" onclick="saveSettings()">Save Accounts</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">Control Panel</div>
+                <div class="card-body">
+                    <h5>Status: <span id="statusLabel" class="badge bg-secondary">Not running</span></h5>
+                    <h5>Comments Posted: <span id="commentsPostedLabel" class="badge bg-info">0</span></h5>
+                    <h5>Last Activity: <small id="lastActivityLabel" class="text-muted">None</small></h5>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="doNotPost" checked>
+                        <label class="form-check-label" for="doNotPost">Do not post comments (Review mode)</label>
+                    </div>
+                    <button class="btn btn-success" id="startBtn" onclick="startScraper()">Start Scraping</button>
+                    <button class="btn btn-danger" id="stopBtn" onclick="stopScraper()" disabled>Stop</button>
+                </div>
+            </div>
+
+            <!-- Logs -->
+            <div class="card mt-4">
+                <div class="card-header">Logs</div>
+                <div class="card-body p-0">
+                    <div class="log-container" id="logBox"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results (Review Mode) -->
+    <div class="card mt-4" id="resultsCard" style="display: none;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            Review Generated Comments 
+            <button class="btn btn-warning btn-sm" onclick="postSelected()">Post Selected</button>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-dark" id="resultsTable">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">Select</th>
+                        <th>Account</th>
+                        <th>Subreddit</th>
+                        <th>Title</th>
+                        <th>AI Comment</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Settings Modal -->
+<div class="modal fade" id="advancedSettingsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Advanced & Schedule Settings</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+            <div class="col">
+                <label>Active Start Time (HH:MM)</label>
+                <input type="time" id="time_start" class="form-control" />
+            </div>
+            <div class="col">
+                <label>Active End Time (HH:MM)</label>
+                <input type="time" id="time_end" class="form-control" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label>Max Comments Per Day (per account limit)</label>
+            <input type="number" id="max_comments_per_day" class="form-control" placeholder="e.g. 50">
+        </div>
+        
+        <hr>
+        <h6>AI & Targeting</h6>
+        <div class="mb-3">
+            <label>Gemini API Key</label>
+            <input type="text" id="gemini_api_key" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Custom Model</label>
+            <input type="text" id="custom_model" class="form-control" placeholder="gemini-1.5-flash" />
+        </div>
+        <div class="mb-3">
+            <label>AI Batch Size (Posts per request)</label>
+            <input type="number" id="ai_batch_size" class="form-control" placeholder="1" />
+        </div>
+        <div class="mb-3">
+            <label>AI Request Wait Time (Seconds)</label>
+            <input type="number" id="ai_wait_time" class="form-control" placeholder="0" />
+        </div>
+        <div class="mb-3">
+            <label>Persona</label>
+            <select id="persona" class="form-select">
+                <option value="normal">Normal</option>
+                <option value="teenager">Teenager</option>
+                <option value="educated">Educated</option>
+                <option value="bot">Bot</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Custom Prompt</label>
+            <textarea id="custom_prompt" class="form-control" rows="3"></textarea>
+        </div>
+        <div class="mb-3">
+            <label>Semantic Keywords (comma separated)</label>
+            <input type="text" id="product_keywords" class="form-control" placeholder="business, automation, ai, workflow" />
+        </div>
+        <div class="row mb-3">
+            <div class="col">
+                <label>Similarity Method</label>
+                <select id="similarity_method" class="form-select">
+                    <option value="Simple (keyword matching only)">Simple (keyword matching only)</option>
+                    <option value="TensorFlow (semantic_similarity)">TensorFlow (semantic_similarity)</option>
+                </select>
+            </div>
+            <div class="col">
+                <label>Similarity Threshold (0-1)</label>
+                <input type="number" id="similarity_threshold" class="form-control" min="0" max="1" step="0.01" />
+            </div>
+        </div>
+        <div class="mb-3">
+            <label>Per-Subreddit Max Posts to Check (per pass)</label>
+            <input type="number" id="per_subreddit_max_posts_to_check" class="form-control" min="1" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveSettings(); bootstrap.Modal.getInstance(document.getElementById('advancedSettingsModal')).hide();">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    let currentResults = [];
+    let currentSettingsInfo = {};
+
+    function addAccountRow(account = {username: "", password: "", proxy: "", enabled: true}) {
+        const tbody = document.getElementById('accountsBody');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><input type="text" class="form-control form-control-sm acc-username" value="${account.username || ''}" /></td>
+            <td><input type="password" class="form-control form-control-sm acc-password" value="${account.password || ''}" /></td>
+            <td><input type="text" class="form-control form-control-sm acc-proxy" placeholder="e.g. 127.0.0.1:8080:usr:pwd" value="${account.proxy || ''}" /></td>
+            <td><input type="checkbox" class="form-check-input acc-enabled" ${account.enabled ? 'checked' : ''} /></td>
+            <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">Remove</button></td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    async function loadSettings() {
+        const res = await fetch('/api/settings');
+        currentSettingsInfo = await res.json();
+        
+        document.getElementById('subreddits').value = (currentSettingsInfo.subreddits || []).join(', ');
+        // document.getElementById('max_articles').value = currentSettingsInfo.max_articles || 100;
+        // document.getElementById('max_comments').value = currentSettingsInfo.max_comments || 0;
+        document.getElementById('main_posts_to_check').value = currentSettingsInfo.max_articles || 100;
+        
+        document.getElementById('concurrent_accounts').value = currentSettingsInfo.concurrent_accounts || 1;
+        
+        // Advanced
+        const adv = currentSettingsInfo.advanced_settings || {};
+        document.getElementById('time_start').value = adv.time_start || '00:00';
+        document.getElementById('time_end').value = adv.time_end || '23:59';
+        document.getElementById('max_comments_per_day').value = adv.max_comments_per_day || 50;
+        document.getElementById('main_max_comments_per_day').value = adv.max_comments_per_day || 50;
+        document.getElementById('gemini_api_key').value = adv.gemini_api_key || '';
+        document.getElementById('custom_model').value = adv.custom_model || 'gemini-1.5-flash';
+        document.getElementById('ai_batch_size').value = adv.ai_batch_size || 1;
+        document.getElementById('ai_wait_time').value = adv.ai_wait_time || 0;
+        document.getElementById('persona').value = adv.persona || 'normal';
+        document.getElementById('custom_prompt').value = adv.custom_prompt || '';
+        document.getElementById('product_keywords').value = adv.product_keywords || '';
+        document.getElementById('similarity_method').value = adv.similarity_method || 'Simple (keyword matching only)';
+        document.getElementById('similarity_threshold').value = adv.similarity_threshold ?? 0.18;
+        document.getElementById('per_subreddit_max_posts_to_check').value = adv.per_subreddit_max_posts_to_check || currentSettingsInfo.max_articles || 100;
+
+        const accountsBody = document.getElementById('accountsBody');
+        accountsBody.innerHTML = '';
+        const accounts = currentSettingsInfo.accounts || [];
+        if (accounts.length === 0) addAccountRow();
+        accounts.forEach(acc => addAccountRow(acc));
+    }
+
+    async function saveSettings() {
+        if (!currentSettingsInfo) currentSettingsInfo = {};
+        
+        currentSettingsInfo.subreddits = document.getElementById('subreddits').value.split(',').map(s => s.trim()).filter(s => s);
+        // currentSettingsInfo.max_articles = parseInt(document.getElementById('max_articles').value) || 100;
+        // currentSettingsInfo.max_comments = parseInt(document.getElementById('max_comments').value) || 0;
+        currentSettingsInfo.max_articles = parseInt(document.getElementById('main_posts_to_check').value) || 100;
+
+        currentSettingsInfo.concurrent_accounts = parseInt(document.getElementById('concurrent_accounts').value) || 1;
+        
+        currentSettingsInfo.advanced_settings = currentSettingsInfo.advanced_settings || {};
+        currentSettingsInfo.advanced_settings.time_start = document.getElementById('time_start').value;
+        currentSettingsInfo.advanced_settings.time_end = document.getElementById('time_end').value;
+        // currentSettingsInfo.advanced_settings.max_comments_per_day = parseInt(document.getElementById('max_comments_per_day').value) || 50;
+        currentSettingsInfo.advanced_settings.max_comments_per_day = parseInt(document.getElementById('main_max_comments_per_day').value) || 50;
+        
+        // Also sync old max_comments to daily limit to ensure runs attempt to fill quota
+        currentSettingsInfo.max_comments = currentSettingsInfo.advanced_settings.max_comments_per_day;
+        currentSettingsInfo.advanced_settings.gemini_api_key = document.getElementById('gemini_api_key').value;
+        currentSettingsInfo.advanced_settings.custom_model = document.getElementById('custom_model').value;
+        currentSettingsInfo.advanced_settings.ai_batch_size = parseInt(document.getElementById('ai_batch_size').value) || 1;
+        currentSettingsInfo.advanced_settings.ai_wait_time = parseInt(document.getElementById('ai_wait_time').value) || 0;
+        currentSettingsInfo.advanced_settings.persona = document.getElementById('persona').value;
+        currentSettingsInfo.advanced_settings.custom_prompt = document.getElementById('custom_prompt').value;
+        currentSettingsInfo.advanced_settings.product_keywords = document.getElementById('product_keywords').value;
+        currentSettingsInfo.advanced_settings.similarity_method = document.getElementById('similarity_method').value;
+        currentSettingsInfo.advanced_settings.similarity_threshold = parseFloat(document.getElementById('similarity_threshold').value) || 0.18;
+        currentSettingsInfo.advanced_settings.per_subreddit_max_posts_to_check = parseInt(document.getElementById('per_subreddit_max_posts_to_check').value) || currentSettingsInfo.max_articles || 100;
+
+        const accountRows = document.querySelectorAll('#accountsBody tr');
+        let accountsData = [];
+        accountRows.forEach(row => {
+            accountsData.push({
+                username: row.querySelector('.acc-username').value.trim(),
+                password: row.querySelector('.acc-password').value.trim(),
+                proxy: row.querySelector('.acc-proxy').value.trim(),
+                enabled: row.querySelector('.acc-enabled').checked
+            });
+        });
+        currentSettingsInfo.accounts = accountsData;
+        
+        await fetch('/api/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(currentSettingsInfo)
+        });
+        alert('Settings Saved');
+    }
+
+    async function startScraper() {
+        await fetch('/api/start', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({do_not_post: document.getElementById('doNotPost').checked})
+        });
+        document.getElementById('startBtn').disabled = true;
+        document.getElementById('stopBtn').disabled = false;
+    }
+
+    async function stopScraper() {
+        if (!confirm('Are you sure you want to stop the scraping loop? It will exit safely.')) return;
+        await fetch('/api/stop', { method: 'POST' });
+        document.getElementById('stopBtn').innerText = "Stopping...";
+        document.getElementById('stopBtn').disabled = true;
+    }
+
+    async function postSelected() {
+        const checkboxes = document.querySelectorAll('.post-checkbox:checked');
+        const selectedComments = [];
+        checkboxes.forEach(cb => {
+            const index = cb.getAttribute('data-index');
+            selectedComments.push(currentResults[index]);
+        });
+        
+        if (selectedComments.length === 0) {
+            alert("No comments selected!");
+            return;
+        }
+
+        await fetch('/api/post_comments', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({comments: selectedComments})
+        });
+        alert('Posting initiated. Check logs.');
+    }
+
+    function renderResults(results) {
+        currentResults = results;
+        const tbody = document.getElementById('resultsBody');
+        tbody.innerHTML = '';
+        results.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="checkbox" class="post-checkbox" data-index="${index}"></td>
+                <td><span class="badge bg-info text-dark">${item.account || 'Unknown'}</span></td>
+                <td>${item.subreddit}</td>
+                <td>${item.title}</td>
+                <td>${item.ai_comment}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        document.getElementById('resultsCard').style.display = 'block';
+    }
+
+    setInterval(async () => {
+        const res = await fetch('/api/status');
+        if (res.ok) {
+            const data = await res.json();
+            const badge = document.getElementById('statusLabel');
+            badge.innerText = data.status;
+
+            const commentsBadge = document.getElementById('commentsPostedLabel');
+            if (commentsBadge && data.total_comments_posted !== undefined) {
+                commentsBadge.innerText = data.total_comments_posted;
+            }
+
+            if (data.status === 'Running') {
+                badge.className = 'badge bg-primary';
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('stopBtn').innerText = "Stop";
+                document.getElementById('resultsCard').style.display = 'none';
+            } else if (data.status === 'Completed') {
+                badge.className = 'badge bg-success';
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('stopBtn').innerText = "Stop";
+                
+                // Fetch results if completed and not loaded yet
+                if (currentResults.length === 0) {
+                    const rRes = await fetch('/api/results');
+                    const rData = await rRes.json();
+                    if (rData.results && rData.results.length > 0) {
+                        renderResults(rData.results);
+                    }
+                }
+            } else {
+                badge.className = 'badge bg-secondary';
+                document.getElementById('startBtn').disabled = false;
+                currentResults = []; // clear old results on new run start/failed/not-running
+            }
+
+            const logBox = document.getElementById('logBox');
+            logBox.innerHTML = data.logs.map(l => `<div>[${l.time}] ${l.message}</div>`).join('');
+            logBox.scrollTop = logBox.scrollHeight;
+            
+            const lastActivityLabel = document.getElementById('lastActivityLabel');
+            if (lastActivityLabel && data.logs && data.logs.length > 0) {
+                lastActivityLabel.innerText = data.logs[data.logs.length - 1].message;
+            }
+        }
+    }, 2000);
+
+    loadSettings();
+</script>
+</body>
+</html>

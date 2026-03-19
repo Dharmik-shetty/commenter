@@ -1,41 +1,234 @@
 {
-    "username": "",
-    "password": "",
-    "subreddits": [
-        "startups",
-        "retail",
-        "ecommerce",
-        "digitalnomad",
-        "sweatystartup",
-        "marketing",
-        "sales",
-        "Business_Ideas",
-        "shopify",
-        "EntrepreneurRideAlong",
-        "BusinessIntelligence",
-        "FulfillmentByAmazon",
-        "restaurantsTechnology",
-        "sideproject"
+    "accounts": [
+        {
+            "username": "Low-Patience-8910",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Terrible-House-6037",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Plus-Sleep-437",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Candid_Ground653",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "No_Stage7893",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "AdhesivenessFew3934",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Consistent_Try7184",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Budget-County-1868",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Dapper-Constant3816",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Free_Research_954",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Wild-Butterfly-4067",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Tall_Acadia_9653",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Adept-Bus-9353",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "That_Researcher_4409",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Cool-Competition-793",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Neither-King-8301",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "DenseMost3152",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "BlockIllustrious2317",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Curious-Concept5606",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        },
+        {
+            "username": "Worried-History1165",
+            "password": "Dharmik@123",
+            "proxy": "",
+            "enabled": true
+        }
     ],
-    "sort_type": "new",
-    "max_articles": 100,
-    "max_comments": 0,
-    "min_wait_time": 50,
-    "max_wait_time": 150,
-    "ai_response_length": 30,
-    "proxy_settings": {},
-    "fingerprint_settings": {},
     "advanced_settings": {
-        "openrouter_api_key": "",
-        "scroll_retries": 3,
+        "ai_batch_size": 3,
+        "ai_wait_time": 5,
         "button_retries": 1,
+        "custom_model": "gemini-3.1-flash-lite-preview",
+        "custom_prompt": "Role\nAct as a regular Reddit user who is active in fitness and weight loss subreddits. You should sound like you\u2019re typing quickly on your phone. Use mostly lowercase, casual grammar, light shorthand like u, bc, thru, kinda, ngl, lol. Imperfect punctuation is fine. Avoid sounding polished, corporate, scripted, or promotional.\n\nTask\nWrite a reply to the Reddit post titled: {title}.\n\nOverall Style\nWrite as one short flowing comment, not separated into visible sections. It should read like a normal person thinking out loud, not following a template.\n\nTone Goals\nconversational  \nslightly messy but readable  \nsupportive and relatable  \nlow key and grounded  \nno hype language  \nno salesy phrasing  \n\nContent Guidance\nStart by casually agreeing or relating to what they\u2019re dealing with. Keep it blunt and human.\n\nThen naturally slide into ONE practical, specific tip that could help their situation. Keep it simple and concrete. One or two short sentences.\n\nAfter that, casually mention that you started using an app called fitness copilot back when you were trying to solve the same problem. It should feel like a side note, not a recommendation.\n\nWhen mentioning the app:\nDo not say just stumbled upon  \nDo not say random find  \nDo not mention ads, sponsored, or partnerships  \nSometimes (not every time) describe it as a viral app or say it\u2019s one of those apps everyone seems to be talking about  \nYou may also phrase it like you kept seeing others mention it, people bringing it up, or folks talking about it  \nBriefly acknowledge that there are tons of apps and you\u2019re not trying to promote anything  \nSay it\u2019s been really helpful for you personally  \nExplain in plain language that you can just type what u want like you\u2019re talking to a friend and it builds a workout and diet plan from that  \nMention that it saves you time and removes guesswork or mental effort\n\nEnd casually, without a call to action.  \nNo \u201ccheck it out\u201d or \u201chighly recommend\u201d.\n\nConstraints\nDo not use dashes or asterisks  \nDo not use perfect grammar  \nNo emojis  \nKeep total length to {length}  \nMust feel like one normal redditor helping another  \n\nOptional Authenticity Boosters\nYou may include at most one small personal detail such as:\ni used to overthink this every night  \ni kept restarting plans before this  \nhalf the time i just wanted someone to tell me what to do",
+        "gemini_api_key": "AIzaSyCPCgizzO8gNWnkHUrsudez4jwpmIVqTfY",
+        "max_comments_per_day": 100,
+        "per_subreddit_max_posts_to_check": 20,
         "persona": "normal",
-        "custom_model": "openai/o3-mini-high",
-        "custom_prompt": "I want you to generate an useful comment based on the {title} of this reddit post that incorporates my {website}. My {website} is about AI business process automation to help businesses save money. You should reply with the title directly in a while also seeming human {length}",
-        "product_keywords": "business, AI, artificial intelligence, company",
-        "website_address": "https://AIBrainL.ink",
-        "similarity_threshold": 0.18,
-        "similarity_method": "Simple (keyword matching only)",
-        "tensorflow_sleep_time": 1.0
-    }
+        "product_keywords": "ai fitness app, always quit after weeks, any app recommendations, beginner routine, beginner workout help, best fitness app, brain tired planning, cant build habit, cant decide what to lift, cant hit protein, cant stay consistent, clueless about workouts, confused about calories, confused about training plan, decision fatigue diet, diet tracking app, dont know what to eat, dont know what workout to follow, eating feels overwhelming, first time lifting, gym newbie, hate building routines, how much should i eat, how to stay consistent, information overload fitness, just want someone to tell me what to do, keep falling off track, looking for something that builds my plan, lose motivation fast, lost in the gym, meal ideas for weight loss, mental load fitness, need accountability, need simple meal plan, need something simple and automatic, need structure without thinking, never stick to plan, new to gym, no idea how to structure workouts, on and off with gym, overthinking gym program, overwhelmed by fitness info, paralyzed by too many programs, planning fatigue gym, program generator, restart fitness journey, something to automate workouts, starting fitness journey, struggling to make a routine, struggling with macros, tired of planning workouts, too much thinking, tool to build routine, tracking calories is exhausting, want an app to tell me what to do, want less guesswork, what diet should i follow, where do i start, wish it was simpler, workout planner app",
+        "scroll_retries": 3,
+        "similarity_method": "TensorFlow (semantic_similarity)",
+        "similarity_threshold": 0.85,
+        "tensorflow_sleep_time": 1,
+        "time_end": "22:00",
+        "time_start": "07:00"
+    },
+    "ai_response_length": 30,
+    "concurrent_accounts": 4,
+    "fingerprint_settings": {},
+    "max_articles": 20,
+    "max_comments": 100,
+    "max_wait_time": 150,
+    "min_wait_time": 50,
+    "proxy_settings": {},
+    "sort_type": "new",
+    "subreddits": [
+        "1200isplenty",
+        "Accountability",
+        "AdvancedFitness",
+        "DesiFitness",
+        "Fitness",
+        "FitnessAustralia",
+        "FitnessCanada",
+        "FitnessMaterialHeaven",
+        "FitnessUK",
+        "Fitness_India",
+        "GYM",
+        "GetMotivated",
+        "GetMotivatedBuddies",
+        "GymFails",
+        "GymMemes",
+        "HIIT",
+        "Health",
+        "IndiaFit",
+        "IndiaRunning",
+        "IndianFitness",
+        "RunningShoeGeeks",
+        "RunningUK",
+        "Strongman",
+        "UKFitness",
+        "applefitnessplus",
+        "bayareafitness",
+        "beginnerfitness",
+        "bodybuilding",
+        "bodytransformation",
+        "bodyweightfitness",
+        "broscience",
+        "calisthenic",
+        "crossfit",
+        "cycling",
+        "decidingtobebetter",
+        "eatcheapandhealthy",
+        "fasting",
+        "fitbit",
+        "fitness30plus",
+        "fitness40plus",
+        "fitnessapps",
+        "fitnessjourney",
+        "fitnessmotivation",
+        "fitnessscience",
+        "flexibility",
+        "gainit",
+        "garmin",
+        "gymhumor",
+        "gymmotivation",
+        "healthyfood",
+        "homegym",
+        "homeworkouts",
+        "intermittentfasting",
+        "keto",
+        "kettlebell",
+        "leangains",
+        "londonfitness",
+        "loseit",
+        "loseweight",
+        "mealprep",
+        "naturalbodybuilding",
+        "nutrition",
+        "nycfitness",
+        "overweight",
+        "petitefitness",
+        "powerlifting",
+        "progresspics",
+        "rowing",
+        "running",
+        "selfimprovement",
+        "smartwatchfitness",
+        "torontofitness",
+        "transfitness",
+        "triathlon",
+        "volumeeating",
+        "wearables",
+        "weightlifting",
+        "weightloss",
+        "workout",
+        "xxfitness",
+        "yoga"
+    ]
 }

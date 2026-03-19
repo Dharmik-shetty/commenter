@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import nltk
+from collections import defaultdict
 from nltk.stem import PorterStemmer
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -23,10 +24,43 @@ from selenium.common.exceptions import (
 )
 import undetected_chromedriver as uc  
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+import threading
+global_history_lock = threading.Lock()
+HISTORY_FILE = "commented_urls.txt"
+_history_cache = None
+_history_file_mtime = 0
 
-# Constants
-OPENROUTER_API_KEY = ""
+def get_history_set():
+    global _history_cache, _history_file_mtime
+    with global_history_lock:
+        if not os.path.exists(HISTORY_FILE):
+             return set()
+        try:
+            mtime = os.path.getmtime(HISTORY_FILE)
+            if _history_cache is None or mtime > _history_file_mtime:
+                 with open(HISTORY_FILE, "r", encoding="utf-8") as f:
+                     _history_cache = set(line.strip() for line in f)
+                 _history_file_mtime = mtime
+            return _history_cache
+        except Exception:
+            return set()
+
+def is_url_in_history(url):
+    try:
+        return url in get_history_set()
+    except Exception:
+        return False
+
+def add_url_to_history(url):
+    global _history_cache
+    try:
+        with global_history_lock:
+            with open(HISTORY_FILE, "a", encoding="utf-8") as f:
+                f.write(url + "\n")
+            if _history_cache is not None:
+                _history_cache.add(url)
+    except Exception:
+        pass
 
 YOUR_SITE_URL = "AIBrainL.ink"
 YOUR_APP_NAME = "Reddit Scraper with AI Comments"
@@ -93,26 +127,86 @@ def preprocess_text(text):
     stemmed_tokens = [ps.stem(token) for token in tokens]
     return ' '.join(stemmed_tokens)
 
-def simple_semantic_similarity(keywords, title):
+def tokenize_processed_text(text):
+    return [token for token in preprocess_text(text).split() if token]
+
+def normalize_keywords(keywords):
+    if isinstance(keywords, str):
+        return [kw.strip().lower() for kw in keywords.split(',') if kw.strip()]
+    if isinstance(keywords, list):
+        return [str(kw).strip().lower() for kw in keywords if str(kw).strip()]
+    return []
+
+def simple_semantic_similarity_score(keywords, title):
     try:
-        # Preprocess the title
         processed_title = preprocess_text(title)
-        
-        # Preprocess and stem each keyword
-        processed_keywords = [preprocess_text(keyword) for keyword in keywords]
-        
-        # Check if any processed keyword is in the processed title
-        for keyword in processed_keywords:
-            if keyword in processed_title:
-                custom_print(f"Keyword '{keyword}' found in title: '{title}'")
-                return True
-        
-        custom_print(f"No keywords found in title: '{title}'")
-        return False
+        title_tokens = set(tokenize_processed_text(title))
+
+        if not title_tokens:
+            return 0.0
+
+        best_score = 0.0
+        for keyword in normalize_keywords(keywords):
+            processed_keyword = preprocess_text(keyword)
+            keyword_tokens = set(tokenize_processed_text(keyword))
+
+            if not keyword_tokens:
+                continue
+
+            # Phrase hit gives a strong score, token overlap gives partial score.
+            phrase_hit_score = 1.0 if processed_keyword and processed_keyword in processed_title else 0.0
+            overlap_score = len(keyword_tokens & title_tokens) / len(keyword_tokens)
+            score = max(phrase_hit_score, overlap_score)
+
+            if score > best_score:
+                best_score = score
+
+        return best_score
 
     except Exception as e:
-        custom_print(f"Error in simple_semantic_similarity function: {str(e)}")
-        return False
+        custom_print(f"Error in simple_semantic_similarity_score function: {str(e)}")
+        return 0.0
+
+def get_relevance_score(keywords, title, similarity_method, tensorflow_sleep_time=1.0):
+    if similarity_method == "TensorFlow (semantic_similarity)":
+        # TensorFlow model support was removed; fall back to robust keyword semantic scoring.
+        custom_print("TensorFlow semantic mode selected; using fallback semantic keyword score.")
+    return simple_semantic_similarity_score(keywords, title)
+
+def evenly_distribute_results(results, max_comments, subreddit_order):
+    if max_comments <= 0 or len(results) <= max_comments:
+        return results
+
+    grouped = defaultdict(list)
+    for item in results:
+        grouped[item.get("subreddit", "")].append(item)
+
+    ordered_subreddits = [sub for sub in subreddit_order if sub in grouped]
+    for sub in grouped.keys():
+        if sub not in ordered_subreddits:
+            ordered_subreddits.append(sub)
+
+    if not ordered_subreddits:
+        return results[:max_comments]
+
+    selected = []
+    indices = {sub: 0 for sub in ordered_subreddits}
+
+    # Round-robin allocation provides even subreddit coverage and maximum diversification.
+    while len(selected) < max_comments:
+        added_in_round = False
+        for sub in ordered_subreddits:
+            idx = indices[sub]
+            if idx < len(grouped[sub]):
+                selected.append(grouped[sub][idx])
+                indices[sub] += 1
+                added_in_round = True
+                if len(selected) >= max_comments:
+                    break
+        if not added_in_round:
+            break
+
+    return selected
 
     
 
@@ -369,60 +463,67 @@ def extract_comments(driver, url, max_comments, scroll_retries, button_retries):
 
     return comments
 
-def generate_ai_comment(title, persona, ai_response_length=0, openrouter_api_key=None, custom_model=None, custom_prompt=None, product_keywords=None, website_address=None):
+def generate_ai_comment(title, persona, ai_response_length=0, gemini_api_key=None, custom_model=None, custom_prompt=None, product_keywords=None):
     custom_print("Generating AI comment...")
-    
-    # Default API key (replace with your actual default key)
-    DEFAULT_API_KEY = "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"
-    
+
+    # Validate API key
+    if not gemini_api_key or not gemini_api_key.strip():
+        custom_print("Error: Gemini API key is missing.")
+        return None
+
     length_instruction = f"Generate a response that is approximately {ai_response_length} words long. " if ai_response_length > 0 else ""
-    
+
     if custom_prompt and custom_prompt.strip():
-        prompt = custom_prompt.format(
-            title=title,
-            length=length_instruction,
-            product=product_keywords or "",
-            website=website_address or ""
-        )
+        # Remove any {website} formatter since we dropped it
+        # Safely formatting by only doing what's needed
+        try:
+            prompt = custom_prompt.format(
+                title=title,
+                length=length_instruction,
+                product=product_keywords or ""
+            )
+        except KeyError:
+            # Fallback if there are unused variables in their prompt like {website}
+            prompt = custom_prompt.replace("{title}", title).replace("{length}", length_instruction).replace("{product}", product_keywords or "").replace("{website}", "")
     else:
-        prompt = f"{PERSONAS[persona]} {length_instruction}Based on the following article title, generate an appropriate and insightful comment response. "
+        prompt = f"{PERSONAS.get(persona, '')} {length_instruction}Based on the following Reddit post text/title, generate an appropriate and insightful comment response. "
         if product_keywords:
             prompt += f"Incorporate information about these keywords: {product_keywords}. "
-        if website_address:
-            prompt += f"Include this website in your response: {website_address}. "
-        prompt += f"\n\nTitle: {title}\n"
+        prompt += f"\n\nPost: {title}\n"
 
     prompt += "\nGenerated comment:"
 
-    #custom_print(f"Sending request to AI model with prompt length: {len(prompt)} characters")
-    #return "HERE IS AI COMMENT"
     try:
-        # Use the provided API key if it's not blank, otherwise use the default
-        api_key = openrouter_api_key.strip() if openrouter_api_key and openrouter_api_key.strip() else DEFAULT_API_KEY
+        api_key = gemini_api_key.strip()
+        model_name = custom_model.strip() if (custom_model and custom_model.strip()) else "gemini-1.5-flash"
         
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
         headers = {
-            "Authorization": f"Bearer {api_key}",
-            "HTTP-Referer": YOUR_SITE_URL,
-            "X-Title": YOUR_APP_NAME,
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "contents": [{
+                "parts": [{"text": prompt}]
+            }]
         }
         
-        payload = {
-            "model": custom_model or "google/gemma-2-9b-it:free",
-            "messages": [{"role": "user", "content": prompt}],
-        }
-        response = requests.post(
-            url="https://openrouter.ai/api/v1/chat/completions",
-            headers=headers,
-            json=payload
-        )
-       
+        response = requests.post(url, headers=headers, json=payload)
         response.raise_for_status()
-        ai_comment = response.json()["choices"][0]["message"]["content"]
-        custom_print("AI comment generated successfully")
-        custom_print(f"Generated comment: {ai_comment}")
-        return ai_comment
+        
+        # Parse Gemini Response
+        response_data = response.json()
+        if "candidates" in response_data and len(response_data["candidates"]) > 0:
+            ai_comment = response_data["candidates"][0]["content"]["parts"][0]["text"]
+            custom_print("AI comment generated successfully via Gemini API")
+            custom_print(f"Generated comment: {ai_comment}")
+            return ai_comment
+        else:
+            custom_print(f"Unexpected empty response structure: {response_data}")
+            return None
+
     except requests.exceptions.RequestException as e:
-        custom_print(f"Error making request to OpenRouter API: {str(e)}")
+        custom_print(f"Error making request to Gemini API: {str(e)}")
         if hasattr(e, 'response') and e.response is not None:
             custom_print(f"Response status code: {e.response.status_code}")
             custom_print(f"Response content: {e.response.text}")
@@ -430,6 +531,110 @@ def generate_ai_comment(title, persona, ai_response_length=0, openrouter_api_key
     except Exception as e:
         custom_print(f"Unexpected error generating AI comment: {str(e)}")
         return None
+
+
+def generate_ai_comments_batch(titles, persona, ai_response_length=0, gemini_api_key=None, custom_model=None, custom_prompt=None, product_keywords=None):
+    custom_print(f"Generating AI comments for batch of {len(titles)} posts...")
+    if not gemini_api_key or not gemini_api_key.strip():
+        custom_print("Error: Gemini API key is missing.")
+        return [None]*len(titles)
+
+    length_instruction = f"Generate a response that is approximately {ai_response_length} words long. " if ai_response_length > 0 else ""
+
+    # --- PRE-PROMPT FOR STRUCTURE ---
+    PRE_PROMPT = (
+        "You are an AI assistant tasked with generating comments for Reddit posts. "
+        "You will be provided with a list of posts. "
+        "Your goal is to generate one comment for EACH post based on the specific instructions given below.\n\n"
+        "*** CRITICAL OUTPUT FORMAT INSTRUCTIONS ***\n"
+        "1. You MUST return the result as a SINGLE, VALID JSON ARRAY of strings.\n"
+        "2. The array must explicitly contain one string comment corresponding to each post in the input order.\n"
+        "3. Do NOT wrap the output in markdown code blocks (like ```json ... ```).\n"
+        "4. Do NOT include any introductory text, explanations, or conclusions. "
+        "Output ONLY the raw JSON array.\n"
+        "Example format: [\"Comment for post 1\", \"Comment for post 2\", \"Comment for post 3\"]\n"
+        "\n--- END OF PRE-PROMPT ---\n\n"
+    )
+
+    # Build prompt
+    prompt = PRE_PROMPT + "Here are the posts to generate comments for:\n\n"
+
+    for i, title in enumerate(titles):
+        prompt += f"--- POST {i} ---\n"
+        if custom_prompt and custom_prompt.strip():
+            try:
+                single_prompt = custom_prompt.format(title=title, length=length_instruction, product=product_keywords or "")
+            except KeyError:
+                single_prompt = custom_prompt.replace("{title}", title).replace("{length}", length_instruction).replace("{product}", product_keywords or "").replace("{website}", "")
+            prompt += f"Specific Instruction for this post: {single_prompt}\n\n"
+        else:
+            base_p = f"{PERSONAS.get(persona, '')} {length_instruction}Based on this post text/title, generate a comment response. "
+            if product_keywords:
+                base_p += f"Incorporate information about these keywords: {product_keywords}. "
+            base_p += f"\nPost Title/Body: {title}\n\n"
+            prompt += base_p
+
+    prompt += "REMINDER: Output ONLY the valid JSON array of strings and nothing else."
+    
+    try:
+        api_key = gemini_api_key.strip()
+        model_name = custom_model.strip() if (custom_model and custom_model.strip()) else "gemini-1.5-flash"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+        payload = {"contents": [{"parts": [{"text": prompt}]}]}
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+
+        response_data = response.json()
+        if "candidates" in response_data and len(response_data["candidates"]) > 0:
+            text_response = response_data["candidates"][0]["content"]["parts"][0]["text"]
+            import json, re
+            
+            # --- Robust JSON Extraction Logic ---
+            json_str = None
+            
+            # 1. Try to find content within ```json ... ``` markers
+            json_code_block = re.search(r'```(?:json)?\s*(\[[\s\S]*?\])\s*```', text_response, re.DOTALL | re.IGNORECASE)
+            if json_code_block:
+                json_str = json_code_block.group(1)
+            else:
+                # 2. Fallback: Find the first '[' and the last ']'
+                start_idx = text_response.find('[')
+                end_idx = text_response.rfind(']')
+                
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    json_str = text_response[start_idx : end_idx + 1]
+                else:
+                    # 3. Last resort: use the whole text
+                    json_str = text_response
+
+            if not json_str:
+                custom_print("Error: Could not find JSON array brackets in response.")
+                custom_print(f"Full response: {text_response}")
+                return [None]*len(titles)
+
+            try:
+                comments = json.loads(json_str)
+                if not isinstance(comments, list):
+                    custom_print("Error: AI did not return a JSON array.")
+                    return [None]*len(titles)
+                if len(comments) != len(titles):
+                    custom_print(f"Warning: AI returned {len(comments)} comments instead of {len(titles)}. Padding/truncating.")
+                    while len(comments) < len(titles):
+                        comments.append(None)
+                    comments = comments[:len(titles)]
+                custom_print("AI comments generated successfully in batch")
+                return comments
+            except json.JSONDecodeError as je:
+                custom_print(f"Error decoding JSON from AI response: {str(je)}\nResponse: {text_response}")
+                return [None]*len(titles)
+        else:
+            custom_print("Unexpected empty response structure")
+            return [None]*len(titles)
+    except Exception as e:
+        custom_print(f"Error in batch AI generation: {str(e)}")
+        return [None]*len(titles)
 
 
 def post_comment(driver, ai_comment, post_url):
@@ -601,17 +806,19 @@ def login_and_scrape_reddit(
     proxy_settings,
     fingerprint_settings,
     do_not_post,
-    openrouter_api_key,
+    gemini_api_key,
     scroll_retries,
     button_retries,
     persona,
     custom_model,
+    ai_batch_size,
+    ai_wait_time,
     custom_prompt,
     product_keywords,
-    website_address,
-    similarity_threshold,  
+    similarity_threshold,
     similarity_method,
     tensorflow_sleep_time,
+    per_subreddit_max_posts_to_check,
     existing_driver=None,
 ):
     options = uc.ChromeOptions()
@@ -675,155 +882,245 @@ def login_and_scrape_reddit(
 
     custom_print("WebDriver initialized successfully")
 
-    all_collected_info = []  # To store results from all subreddits
+    all_collected_info = []
 
     try:
-        custom_print(f"username:{username}                      \n subreddits:{subreddits}                     \n sort-type:{sort_type}                     \n max_articles:{max_articles}                     \n max_comments:{max_comments}                     \n min_wait_time:{min_wait_time}                     \n max_wait_time:{max_wait_time}                     \n Ai response length:{ai_response_length}                     \n proxy settings:{proxy_settings}                     \n openrouter api key:{openrouter_api_key} \n fingerprint settings: {fingerprint_settings}  \n comment scroll retries: {scroll_retries} \n comment button retries: {button_retries}                     \n persona:{persona}                     \n custom model:{custom_model}                     \n product keywords:{product_keywords}                     \n website:{website_address}                     \n similarity method:{similarity_method}                     \n similarity threshold:{similarity_threshold}                     \n tensorflow sleep time:{tensorflow_sleep_time}")                    
+        custom_print(f"username:{username}                      \n subreddits:{subreddits}                     \n sort-type:{sort_type}                     \n max_articles:{max_articles}                     \n max_comments:{max_comments}                     \n min_wait_time:{min_wait_time}                     \n max_wait_time:{max_wait_time}                     \n Ai response length:{ai_response_length}                     \n proxy settings:{proxy_settings}                     \n gemini api key:{gemini_api_key} \n fingerprint settings: {fingerprint_settings}  \n comment scroll retries: {scroll_retries} \n comment button retries: {button_retries}                     \n persona:{persona}                     \n custom model:{custom_model}                     \n product keywords:{product_keywords}                     \n similarity method:{similarity_method}                     \n similarity threshold:{similarity_threshold}                     \n tensorflow sleep time:{tensorflow_sleep_time}")                    
         
-
-        
-            
         try:
-                #WebDriverWait(driver, 240).until(
-                #EC.presence_of_element_located((By.CSS_SELECTOR, "shreddit-post"))
-                #)
-                wait_for_element(driver, By.CSS_SELECTOR, "shreddit-post")
-                custom_print("Logged in. Articles loaded successfully")
+            wait_for_element(driver, By.CSS_SELECTOR, "shreddit-post")
+            custom_print("Logged in. Articles loaded successfully")
         except TimeoutException:
-                custom_print("Timeout waiting for login.")
-                custom_print("Closing WebDriver...")
-                driver.quit()
-                return []
+            custom_print("Timeout waiting for login.")
+            custom_print("Closing WebDriver...")
+            driver.quit()
+            return [], None
 
-        for subreddit in subreddits:
-            custom_print(f"\nStarting to scrape subreddit: r/{subreddit}")
-            subreddit_url = f"https://www.reddit.com/r/{subreddit}/{sort_type}/"
+        normalized_keywords = normalize_keywords(product_keywords)
+        threshold = float(similarity_threshold or 0.0)
+        per_subreddit_limit = int(per_subreddit_max_posts_to_check or max_articles or 100)
+        if per_subreddit_limit <= 0:
+            per_subreddit_limit = int(max_articles or 100)
+
+        base_scan_limit = int(max_articles or per_subreddit_limit or 100)
+        if base_scan_limit <= 0:
+            base_scan_limit = per_subreddit_limit
+
+        subreddit_seen_urls = {subreddit: set() for subreddit in subreddits}
+
+        def scrape_subreddit_once(subreddit_name, posts_to_check):
+            custom_print(f"\nStarting to scrape subreddit: r/{subreddit_name} (checking up to {posts_to_check} posts this pass)")
+            subreddit_url = f"https://www.reddit.com/r/{subreddit_name}/{sort_type}/"
             driver.get(subreddit_url)
             custom_print("Waiting for page to load...")
-            
+
             WebDriverWait(driver, 60).until(
                 EC.presence_of_element_located((By.TAG_NAME, "article"))
             )
             custom_print("Articles loaded.")
 
             collected_info = []
-            articles_scraped = 0
-            last_height = driver.execute_script("return document.body.scrollHeight")
-            processed_urls = set()
+            relevant_posts_queue = []
+            checked_posts = 0
+            new_urls_processed = 0
             no_new_posts_count = 0
 
-
-            # Split product keywords into keywords
-            if isinstance(product_keywords, str):
-                product_keywords = [kw.strip().lower() for kw in product_keywords.split(',')]
-            elif isinstance(product_keywords, list):
-                product_keywords = [kw.strip().lower() for kw in product_keywords]
-            else:
-                custom_print("Error: product_keywords is neither a string nor a list")
-                product_keywords = []
-
-            while articles_scraped < max_articles:
-                custom_print("Finding posts...")
+            while checked_posts < posts_to_check:
                 posts = driver.find_elements(By.TAG_NAME, "article")
-                custom_print(f"Found {len(posts)} posts")
+                custom_print(f"Found {len(posts)} visible posts in r/{subreddit_name}")
 
                 new_posts_processed = False
                 for post in posts:
-                    if articles_scraped >= max_articles:
+                    if checked_posts >= posts_to_check:
                         break
-                    
+
                     try:
                         shreddit_post = post.find_element(By.TAG_NAME, "shreddit-post")
-                        url = "https://www.reddit.com" + shreddit_post.get_attribute("permalink")
+                        permalink = shreddit_post.get_attribute("permalink")
+                        if not permalink:
+                            continue
+                        url = "https://www.reddit.com" + permalink
 
-                        if url in processed_urls:
+                        if url in subreddit_seen_urls[subreddit_name]:
+                            continue
+                            
+                        # Prevent duplicate comments across multiple accounts
+                        if is_url_in_history(url):
+                            custom_print(f"Skipping post {url} - already processed by an account in the past.")
+                            subreddit_seen_urls[subreddit_name].add(url)
                             continue
 
-                        custom_print(f"Processing post {articles_scraped + 1}...")
-                        title = post.get_attribute("aria-label")
+                        checked_posts += 1
+                        new_urls_processed += 1
+                        new_posts_processed = True
+                        subreddit_seen_urls[subreddit_name].add(url)
 
-                        custom_print(f"Post {articles_scraped + 1}/{max_articles} - Title: {title}")
-                        custom_print(f"Post {articles_scraped + 1}/{max_articles} - URL: {url}")
-                        time.sleep(button_retries)
-                        # Check if the title contains any of the product keywords
-                        title = title.lower()
-                        
-                        if similarity_method == "TensorFlow (semantic_similarity)":
-                            is_relevant = semantic_similarity(product_keywords, title, threshold=similarity_threshold, sleep_time=tensorflow_sleep_time)
-                        else:  # "Simple (simple_semantic_similarity)"
-                            is_relevant = simple_semantic_similarity(product_keywords, title)
+                        title = post.get_attribute("aria-label") or ""
+                        try:
+                            body_elements = shreddit_post.find_elements(By.CSS_SELECTOR, "div[slot='text-body'], div[id^='post-rtjson-content'], div.feed-card-text-preview, p")
+                            body_text_parts = [b.text.strip() for b in body_elements if b.text.strip()]
+                            if body_text_parts:
+                                title = title + "\n" + "\n".join(body_text_parts)
+                        except Exception:
+                            pass
+
+                        relevance_score = get_relevance_score(
+                            normalized_keywords,
+                            title,
+                            similarity_method,
+                            tensorflow_sleep_time,
+                        )
+                        is_relevant = relevance_score >= threshold
+                        custom_print(
+                            f"Post {checked_posts}/{posts_to_check} relevance={relevance_score:.3f} (threshold={threshold:.3f}) - {url}"
+                        )
 
                         if is_relevant:
-                            custom_print(f"Relevant content found in post {articles_scraped + 1}")
-
+                            add_url_to_history(url)
                             comments = []
                             if max_comments > 0:
-                                custom_print(f"Extracting up to {max_comments} comments...")
-                                comments = extract_comments(driver, url, max_comments, scroll_retries, button_retries)
-                                custom_print(f"Extracted {len(comments)} comments")
+                                comments_to_extract = min(max_comments, 10)
+                                custom_print(f"Extracting up to {comments_to_extract} comments...")
+                                comments = extract_comments(driver, url, comments_to_extract, scroll_retries, button_retries)
 
-                            custom_print(f"Generating AI comment for post {articles_scraped + 1}...")
-                            ai_comment = generate_ai_comment(
-                                title,
-                                persona,
-                                ai_response_length,
-                                openrouter_api_key,
-                                custom_model,
-                                custom_prompt,
-                                product_keywords,
-                                website_address
-                            )
-
-                            collected_info.append({
-                                "subreddit": subreddit,
+                            relevant_posts_queue.append({
+                                "subreddit": subreddit_name,
                                 "title": title,
                                 "url": url,
                                 "comments": comments,
-                                "ai_comment": ai_comment,
+                                "relevance_score": round(relevance_score, 4),
                             })
-                           
-                        else:
-                            custom_print(f"No relevant keywords found in post {articles_scraped + 1}. Skipping...")
 
-                        processed_urls.add(url)
-                        articles_scraped += 1
-                        new_posts_processed = True
+                            if len(relevant_posts_queue) >= ai_batch_size:
+                                titles_to_process = [p['title'] for p in relevant_posts_queue]
+                                batch_comments = generate_ai_comments_batch(
+                                    titles_to_process, persona, ai_response_length, gemini_api_key, custom_model, custom_prompt, normalized_keywords
+                                )
+                                for p, ai_c in zip(relevant_posts_queue, batch_comments):
+                                    if ai_c:
+                                        p['ai_comment'] = ai_c
+                                        collected_info.append(p)
+                                relevant_posts_queue.clear()
+                                if ai_wait_time > 0:
+                                    custom_print(f"Waiting {ai_wait_time} seconds before next AI request...")
+                                    time.sleep(ai_wait_time)
+
+                        else:
+                            custom_print("Post skipped due to low relevance score.")
 
                     except StaleElementReferenceException:
-                        custom_print(f"Stale element reference for post {articles_scraped + 1}. Skipping...")
+                        custom_print(f"Stale element while processing r/{subreddit_name}; skipping one post.")
                     except NoSuchElementException as e:
-                        custom_print(f"Element not found for post {articles_scraped + 1}: {str(e)}. Skipping...")
+                        custom_print(f"Missing element in r/{subreddit_name}: {str(e)}")
                     except Exception as e:
-                        custom_print(f"An error occurred processing post {articles_scraped + 1}: {str(e)}. Skipping...")
+                        custom_print(f"Unexpected error processing post in r/{subreddit_name}: {str(e)}")
 
-                custom_print(f"Processed {articles_scraped} posts so far")
+                if checked_posts >= posts_to_check:
+                    break
 
                 if not new_posts_processed:
                     no_new_posts_count += 1
-                    custom_print(f"No new posts found. Scroll attempt {no_new_posts_count}/{scroll_retries}")
                     if no_new_posts_count >= scroll_retries:
-                        custom_print(f"No new posts found after {scroll_retries} scrolls. Moving to next subreddit.")
+                        custom_print(f"No new posts discovered in r/{subreddit_name} after {scroll_retries} attempts.")
                         break
                 else:
-                    no_new_posts_count = 0  # Reset the counter if new posts were processed
+                    no_new_posts_count = 0
 
-                # Scroll down to load more content
                 last_height = driver.execute_script("return document.body.scrollHeight")
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                time.sleep(2)  # Wait for new content to load
+                time.sleep(2)
                 new_height = driver.execute_script("return document.body.scrollHeight")
                 if new_height == last_height:
                     no_new_posts_count += 1
-                    custom_print(f"Page height didn't change. Scroll attempt {no_new_posts_count}/{scroll_retries}")
                     if no_new_posts_count >= scroll_retries:
-                        custom_print("No more posts to load after multiple scroll attempts.")
+                        custom_print(f"Reached scroll limit in r/{subreddit_name}; moving on.")
                         break
-                else:
-                    custom_print("Scrolled successfully, new content loaded.")
-                    no_new_posts_count = 0  # Reset the counter if the page height changed
 
+            if relevant_posts_queue:
+                titles_to_process = [p['title'] for p in relevant_posts_queue]
+                batch_comments = generate_ai_comments_batch(
+                    titles_to_process, persona, ai_response_length, gemini_api_key, custom_model, custom_prompt, normalized_keywords
+                )
+                for p, ai_c in zip(relevant_posts_queue, batch_comments):
+                    if ai_c:
+                        p['ai_comment'] = ai_c
+                        collected_info.append(p)
+                relevant_posts_queue.clear()
+                if ai_wait_time > 0:
+                    custom_print(f"Waiting {ai_wait_time} seconds before continuing...")
+                    time.sleep(ai_wait_time)
+
+            custom_print(
+                f"Scraping pass complete for r/{subreddit_name}. Checked {checked_posts} posts, found {len(collected_info)} relevant posts."
+            )
+            return collected_info, new_urls_processed
+
+        total_target = int(max_comments or 0)
+        if total_target < 0:
+            total_target = 0
+
+        # Pass 1: respect per-subreddit post-check cap.
+        for subreddit in subreddits:
+            collected_info, _ = scrape_subreddit_once(subreddit, per_subreddit_limit)
             all_collected_info.extend(collected_info)
-            custom_print(f"Scraping completed for r/{subreddit}. Total relevant posts processed: {len(collected_info)}")
+
+        # Fallback passes: if max comments target is not met, scan more posts efficiently.
+        if total_target > 0 and len(all_collected_info) < total_target:
+            custom_print(
+                f"Initial scan found {len(all_collected_info)} relevant posts, below target {total_target}. Running fallback extra scans."
+            )
+            extra_passes = 0
+            max_extra_passes = 3
+            fallback_scan_limit = max(base_scan_limit, per_subreddit_limit)
+
+            while len(all_collected_info) < total_target and extra_passes < max_extra_passes:
+                extra_passes += 1
+                round_new_urls = 0
+                round_new_relevant = 0
+                custom_print(f"Starting fallback pass {extra_passes}/{max_extra_passes}...")
+
+                for subreddit in subreddits:
+                    collected_info, new_urls = scrape_subreddit_once(subreddit, fallback_scan_limit)
+                    round_new_urls += new_urls
+                    round_new_relevant += len(collected_info)
+                    all_collected_info.extend(collected_info)
+
+                    if len(all_collected_info) >= total_target:
+                        break
+
+                if round_new_urls == 0 or round_new_relevant == 0:
+                    custom_print("Fallback pass produced no useful new matches; stopping extra scans.")
+                    break
+
+        # Final selection is diversified evenly across subreddits.
+        if total_target > 0:
+            pre_distribution_count = len(all_collected_info)
+            all_collected_info = evenly_distribute_results(all_collected_info, total_target, subreddits)
+            custom_print(
+                f"Diversified selection complete. {len(all_collected_info)} posts selected from {pre_distribution_count} relevant matches."
+            )
+
+            if len(all_collected_info) < total_target:
+                custom_print(
+                    f"Could only prepare {len(all_collected_info)} comments out of target {total_target}; not enough relevant posts available."
+                )
+
+        if not do_not_post:
+            custom_print("Auto-posting is enabled (do_not_post is False). Proceeding to post comments...")
+            for info in all_collected_info:
+                if info.get('ai_comment') and info.get('url'):
+                    try:
+                        wait_time = random.uniform(min_wait_time, max_wait_time)
+                        custom_print(f"Waiting {wait_time:.1f} seconds before posting to {info['url']}...")
+                        time.sleep(wait_time)
+                        
+                        success = post_comment(driver, info['ai_comment'], info['url'])
+                        info['post_successful'] = success
+                    except Exception as e:
+                        custom_print(f"Failed to auto-post: {str(e)}")
+                        info['post_successful'] = False
+        else:
+            custom_print("do_not_post is True. Skipping auto-posting. Comments are ready for manual review.")
 
     except Exception as e:
         custom_print(f"An unexpected error occurred: {str(e)}")

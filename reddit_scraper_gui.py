@@ -250,14 +250,13 @@ class ScraperWorker(QThread):
                 proxy_settings=self.params['proxy_settings'],
                 fingerprint_settings=self.params['fingerprint_settings'],
                 do_not_post=self.params['do_not_post'],
-                openrouter_api_key=self.params['openrouter_api_key'],
+                gemini_api_key=self.params['gemini_api_key'],
                 scroll_retries=self.params['scroll_retries'],
                 button_retries=self.params['button_retries'],
                 persona=self.params['persona'],
                 custom_model=self.params['custom_model'],
                 custom_prompt=self.params['custom_prompt'],
                 product_keywords=self.params['product_keywords'],
-                website_address=self.params['website_address'],
                 similarity_threshold=self.params['similarity_threshold'],  # Add this line
                 similarity_method=self.params['similarity_method'],
                 tensorflow_sleep_time=self.params['tensorflow_sleep_time'],
@@ -533,9 +532,9 @@ class AdvancedSettingsDialog(QDialog):
 
         form_layout = QFormLayout()
 
-        self.openrouter_api_key = QLineEdit(self)
-        self.openrouter_api_key.setEchoMode(QLineEdit.EchoMode.Password)
-        form_layout.addRow("OpenRouter API Key:", self.openrouter_api_key)
+        self.gemini_api_key = QLineEdit(self)
+        self.gemini_api_key.setEchoMode(QLineEdit.EchoMode.Password)
+        form_layout.addRow("Gemini API Key:", self.gemini_api_key)
 
         self.scroll_retries = QSpinBox(self)
         self.scroll_retries.setRange(0, 9999)
@@ -551,7 +550,7 @@ class AdvancedSettingsDialog(QDialog):
 
         self.custom_model = QLineEdit(self)
         self.custom_model.setPlaceholderText("e.g., google/gemma-2-9b-it:free")
-        form_layout.addRow("Custom OpenRouter Model:", self.custom_model)
+        form_layout.addRow("Custom Gemini Model:", self.custom_model)
 
         # New fields for product keywords and website address
         self.product_keywords = QLineEdit(self)
@@ -577,9 +576,6 @@ class AdvancedSettingsDialog(QDialog):
         form_layout.addRow("Similarity Method:", self.similarity_method)
 
 
-        self.website_address = QLineEdit(self)
-        self.website_address.setPlaceholderText("Enter website URL")
-        form_layout.addRow("Website Address:", self.website_address)
 
         layout.addLayout(form_layout)
 
@@ -600,28 +596,26 @@ class AdvancedSettingsDialog(QDialog):
 
     def get_settings(self):
         return {
-            "openrouter_api_key": self.openrouter_api_key.text(),
+            "gemini_api_key": self.gemini_api_key.text(),
             "scroll_retries": self.scroll_retries.value(),
             "button_retries": self.button_retries.value(),
             "persona": self.persona.currentText(),
             "custom_model": self.custom_model.text(),
             "custom_prompt": self.custom_prompt.toPlainText(),
             "product_keywords": self.product_keywords.text(),
-            "website_address": self.website_address.text(),
             "similarity_threshold": self.similarity_threshold.value(),
             "similarity_method": self.similarity_method.currentText(),
             "tensorflow_sleep_time": self.tensorflow_sleep_time.value(),
         }
 
     def set_settings(self, settings):
-        self.openrouter_api_key.setText(settings.get("openrouter_api_key", ""))
+        self.gemini_api_key.setText(settings.get("gemini_api_key", ""))
         self.scroll_retries.setValue(settings.get("scroll_retries", 20))
         self.button_retries.setValue(settings.get("button_retries", 1))
         self.persona.setCurrentText(settings.get("persona", "normal"))
         self.custom_model.setText(settings.get("custom_model", ""))
         self.custom_prompt.setPlainText(settings.get("custom_prompt", ""))
         self.product_keywords.setText(settings.get("product_keywords", ""))
-        self.website_address.setText(settings.get("website_address", ""))
         self.similarity_threshold.setValue(settings.get("similarity_threshold", 0.5))
         self.similarity_method.setCurrentText(settings.get("similarity_method", "Simple (keyword matching only)"))
         self.tensorflow_sleep_time.setValue(settings.get("tensorflow_sleep_time", 1.0))
@@ -637,7 +631,7 @@ class RedditScraperGUI(QMainWindow):
         self.proxy_settings = {}
         self.fingerprint_settings = {}
         self.advanced_settings = {
-            "openrouter_api_key": "",
+            "gemini_api_key": "",
             "scroll_retries": 2,
             "button_retries": 2,
             "persona": "normal",
@@ -697,8 +691,8 @@ class RedditScraperGUI(QMainWindow):
         self.layout.addWidget(QLabel("Sort Type:"))
         self.layout.addWidget(self.sort_type)
 
-        self.max_articles = self.create_spinbox("Max Articles per Subreddit:", 1, 1000, 10)
-        self.max_comments = self.create_spinbox("Max Comments per Article: (NOT FUNCTIONAL YET)", 0, 1000, 10)        
+        self.max_articles = self.create_spinbox("Posts to check per Subreddit:", 1, 1000, 10)
+        self.max_comments = self.create_spinbox("Max Comments per Day:", 1, 1000, 10)        
         
         # Wait time input fields
         wait_time_layout = QHBoxLayout()
@@ -1165,7 +1159,7 @@ class RedditScraperGUI(QMainWindow):
             "proxy_settings": self.proxy_settings,
             "fingerprint_settings": self.fingerprint_settings,
             "do_not_post": self.do_not_post.isChecked(),
-            "openrouter_api_key": self.advanced_settings.get("openrouter_api_key", "").strip(),
+            "gemini_api_key": self.advanced_settings.get("gemini_api_key", "").strip(),
             "custom_prompt": self.advanced_settings.get("custom_prompt", "").strip(),
             "product_keywords": self.advanced_settings.get("product_keywords", ""),
             "similarity_threshold": self.advanced_settings.get("similarity_threshold", 0.5),
