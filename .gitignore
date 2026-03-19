@@ -1,2 +1,31 @@
+# Sensitive Settings
+settings.json
+dist/settings.json
 
-/venv
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+
+# Logs
+*.log
+log.txt
+dist/log.txt
+
+# Application Data
+commented_urls.txt
+test_out.txt
+
+# Build Artifacts (PyInstaller)
+build/
+dist/
+*.spec
+
+# VS Code
+.vscode/
