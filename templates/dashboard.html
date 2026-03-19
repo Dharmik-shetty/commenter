@@ -75,12 +75,9 @@
                     <h5>Status: <span id="statusLabel" class="badge bg-secondary">Not running</span></h5>
                     <h5>Comments Posted: <span id="commentsPostedLabel" class="badge bg-info">0</span></h5>
                     <h5>Last Activity: <small id="lastActivityLabel" class="text-muted">None</small></h5>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="doNotPost" checked>
-                        <label class="form-check-label" for="doNotPost">Do not post comments (Review mode)</label>
-                    </div>
                     <button class="btn btn-success" id="startBtn" onclick="startScraper()">Start Scraping</button>
                     <button class="btn btn-danger" id="stopBtn" onclick="stopScraper()" disabled>Stop</button>
+                    <button class="btn btn-outline-danger ms-2" onclick="resetState()">Erase State</button>
                 </div>
             </div>
 
@@ -94,27 +91,7 @@
         </div>
     </div>
 
-    <!-- Results (Review Mode) -->
-    <div class="card mt-4" id="resultsCard" style="display: none;">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            Review Generated Comments 
-            <button class="btn btn-warning btn-sm" onclick="postSelected()">Post Selected</button>
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered table-dark" id="resultsTable">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">Select</th>
-                        <th>Account</th>
-                        <th>Subreddit</th>
-                        <th>Title</th>
-                        <th>AI Comment</th>
-                    </tr>
-                </thead>
-                <tbody id="resultsBody"></tbody>
-            </table>
-        </div>
-    </div>
+    <!-- Results (Review Mode) - REMOVED for auto-run -->
 </div>
 
 <!-- Advanced Settings Modal -->
@@ -307,7 +284,7 @@
         await fetch('/api/start', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({do_not_post: document.getElementById('doNotPost').checked})
+            body: JSON.stringify({do_not_post: false})
         });
         document.getElementById('startBtn').disabled = true;
         document.getElementById('stopBtn').disabled = false;
@@ -320,43 +297,19 @@
         document.getElementById('stopBtn').disabled = true;
     }
 
-    async function postSelected() {
-        const checkboxes = document.querySelectorAll('.post-checkbox:checked');
-        const selectedComments = [];
-        checkboxes.forEach(cb => {
-            const index = cb.getAttribute('data-index');
-            selectedComments.push(currentResults[index]);
-        });
+    async function resetState() {
+        if (!confirm('Are you sure you want to ERASE the persistent state? This will reset all daily limits and history tracking for the current session. Use this if you want to start fresh.')) return;
         
-        if (selectedComments.length === 0) {
-            alert("No comments selected!");
-            return;
+        try {
+            const res = await fetch('/api/reset_state', { method: 'POST' });
+            if (res.ok) {
+                alert('State erased successfully.');
+            } else {
+                alert('Failed to erase state.');
+            }
+        } catch (e) {
+            alert('Error communicating with server: ' + e);
         }
-
-        await fetch('/api/post_comments', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({comments: selectedComments})
-        });
-        alert('Posting initiated. Check logs.');
-    }
-
-    function renderResults(results) {
-        currentResults = results;
-        const tbody = document.getElementById('resultsBody');
-        tbody.innerHTML = '';
-        results.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td><input type="checkbox" class="post-checkbox" data-index="${index}"></td>
-                <td><span class="badge bg-info text-dark">${item.account || 'Unknown'}</span></td>
-                <td>${item.subreddit}</td>
-                <td>${item.title}</td>
-                <td>${item.ai_comment}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-        document.getElementById('resultsCard').style.display = 'block';
     }
 
     setInterval(async () => {
@@ -376,30 +329,21 @@
                 document.getElementById('startBtn').disabled = true;
                 document.getElementById('stopBtn').disabled = false;
                 document.getElementById('stopBtn').innerText = "Stop";
-                document.getElementById('resultsCard').style.display = 'none';
             } else if (data.status === 'Completed') {
                 badge.className = 'badge bg-success';
                 document.getElementById('startBtn').disabled = false;
                 document.getElementById('stopBtn').disabled = true;
                 document.getElementById('stopBtn').innerText = "Stop";
-                
-                // Fetch results if completed and not loaded yet
-                if (currentResults.length === 0) {
-                    const rRes = await fetch('/api/results');
-                    const rData = await rRes.json();
-                    if (rData.results && rData.results.length > 0) {
-                        renderResults(rData.results);
-                    }
-                }
             } else {
                 badge.className = 'badge bg-secondary';
                 document.getElementById('startBtn').disabled = false;
-                currentResults = []; // clear old results on new run start/failed/not-running
             }
 
             const logBox = document.getElementById('logBox');
             logBox.innerHTML = data.logs.map(l => `<div>[${l.time}] ${l.message}</div>`).join('');
-            logBox.scrollTop = logBox.scrollHeight;
+            if (logBox.scrollHeight - logBox.scrollTop - logBox.clientHeight < 50) {
+                logBox.scrollTop = logBox.scrollHeight;
+            }
             
             const lastActivityLabel = document.getElementById('lastActivityLabel');
             if (lastActivityLabel && data.logs && data.logs.length > 0) {
@@ -412,3 +356,4 @@
 </script>
 </body>
 </html>
+

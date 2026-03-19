@@ -820,8 +820,13 @@ def login_and_scrape_reddit(
     tensorflow_sleep_time,
     per_subreddit_max_posts_to_check,
     existing_driver=None,
+    resume_state=None,
+    update_state_callback=None,
+    headless=False
 ):
     options = uc.ChromeOptions()
+    if headless:
+        options.add_argument("--headless")
     options.add_argument("--start-maximized")
     
     #chrome_options = Options()
@@ -835,6 +840,8 @@ def login_and_scrape_reddit(
         
     else:
         options = uc.ChromeOptions()
+        if headless:
+            options.add_argument("--headless")
         options.add_argument("--start-maximized")
         
         # Apply proxy settings
@@ -846,8 +853,8 @@ def login_and_scrape_reddit(
 
         # Explicitly specify Chrome version to match the installed version
         driver = uc.Chrome(
-            options=options,
-            version_main=133  # Set to match your Chrome version 133.0.6943.142
+            options=options
+            # version_main=133  # Set to match your Chrome version 133.0.6943.142
         )
         custom_print("New WebDriver session initialized")
 
@@ -907,6 +914,13 @@ def login_and_scrape_reddit(
             base_scan_limit = per_subreddit_limit
 
         subreddit_seen_urls = {subreddit: set() for subreddit in subreddits}
+        
+        # Load seen URLs from resume state if available
+        if resume_state and "seen_urls" in resume_state:
+            cached_seen = resume_state["seen_urls"]
+            for sub, urls in cached_seen.items():
+                if sub in subreddit_seen_urls:
+                    subreddit_seen_urls[sub] = set(urls)
 
         def scrape_subreddit_once(subreddit_name, posts_to_check):
             custom_print(f"\nStarting to scrape subreddit: r/{subreddit_name} (checking up to {posts_to_check} posts this pass)")
@@ -954,6 +968,16 @@ def login_and_scrape_reddit(
                         new_urls_processed += 1
                         new_posts_processed = True
                         subreddit_seen_urls[subreddit_name].add(url)
+                        
+                        # Update state callback
+                        if update_state_callback:
+                             # Convert sets to lists for JSON serialization
+                             seen_dict_serializable = {k: list(v) for k,v in subreddit_seen_urls.items()}
+                             update_state_callback({
+                                 "seen_urls": seen_dict_serializable,
+                                 "last_activity": time.time(),
+                                 "current_subreddit": subreddit_name
+                             })
 
                         title = post.get_attribute("aria-label") or ""
                         try:
@@ -1050,7 +1074,18 @@ def login_and_scrape_reddit(
                     custom_print(f"Waiting {ai_wait_time} seconds before continuing...")
                     time.sleep(ai_wait_time)
 
-            custom_print(
+        resume_index = 0
+        if resume_state:
+             resume_index = resume_state.get("current_subreddit_index", 0)
+        
+        for idx, subreddit in enumerate(subreddits):
+            if idx < resume_index:
+                custom_print(f"Skipping already scraped subreddit: r/{subreddit}")
+                continue
+                
+            if update_state_callback:
+                 update_state_callback({"current_subreddit_index": idx})
+
                 f"Scraping pass complete for r/{subreddit_name}. Checked {checked_posts} posts, found {len(collected_info)} relevant posts."
             )
             return collected_info, new_urls_processed

@@ -17,10 +17,36 @@ scraper_results = []
 drivers_instances = {}
 stop_requested = False
 total_comments_posted = 0  # To track comments posted across runs
+daily_limits = {} # Global state for daily limits
+session_state = {} # Global state for session resumption
 
 # To ensure thread safety when modifying shared lists
 log_lock = threading.Lock()
 result_lock = threading.Lock()
+state_lock = threading.Lock() # Lock for state file operations
+
+def load_state():
+    global daily_limits, session_state
+    if os.path.exists("state.json"):
+        try:
+            with open("state.json", "r") as f:
+                data = json.load(f)
+                daily_limits = data.get("daily_limits", {})
+                session_state = data.get("session_state", {})
+        except Exception as e:
+            print(f"Error loading state: {e}")
+
+def save_state():
+    global daily_limits, session_state
+    try:
+        with state_lock:
+            with open("state.json", "w") as f:
+                json.dump({
+                    "daily_limits": daily_limits,
+                    "session_state": session_state
+                }, f, indent=4)
+    except Exception as e:
+        print(f"Error saving state: {e}")
 
 def load_settings():
     if os.path.exists("settings.json"):
@@ -118,6 +144,26 @@ def run_single_account(account, params, daily_limits):
         set_print_function(custom_print)
         scoped_print(f"Starting the scraping process... {allowed_this_run} comments allowed this run.")
         
+        # Load session state for this user
+        user_resume_state = {}
+        with state_lock:
+             if username in session_state:
+                  user_resume_state = session_state[username]
+                  scoped_print("Resuming from saved state.")
+
+        def update_state_callback(new_data):
+             with state_lock:
+                  if username not in session_state:
+                       session_state[username] = {}
+                  session_state[username].update(new_data)
+                  # Save state to disk periodically could be done here, but maybe too frequent?
+                  # For crash safety, saving on every update is safer.
+                  with open("state.json", "w") as f:
+                        json.dump({
+                            "daily_limits": daily_limits,
+                            "session_state": session_state
+                        }, f, indent=4)
+
         proxy_settings = parse_proxy(account.get('proxy', ''))
         
         all_results, driver = login_and_scrape_reddit(
@@ -147,10 +193,27 @@ def run_single_account(account, params, daily_limits):
             similarity_method=params.get('advanced_settings', {}).get('similarity_method', 'Simple (keyword matching only)'),
             tensorflow_sleep_time=params.get('advanced_settings', {}).get('tensorflow_sleep_time', 1.0),
             per_subreddit_max_posts_to_check=params.get('advanced_settings', {}).get('per_subreddit_max_posts_to_check', params.get('max_articles', 100)),
-            existing_driver=None # Always spawn new driver for parallel accounts
+            existing_driver=None, # Always spawn new driver for parallel accounts
+            resume_state=user_resume_state,
+            update_state_callback=update_state_callback
         )
         
         scoped_print("Scraping completed.")
+        
+        # Clear session state for this user ONLY IF successfully completed FULL run
+        # If we reached daily limit or finished subreddits, we reset the session state for next day
+        # But if we stopped early, we keep it. The outer loop logic determines completion.
+        # Actually, if we finished 'login_and_scrape_reddit' without exception, it means we finished the pass.
+        # So we should reset the index and seen_urls for the NEXT run?
+        # NO, 'seen_urls' should persist for the day or longer. The 'index' should reset if we want to loop.
+        # However, the user asked for indefinite running. 
+        # If we finish the list of subreddits, we typically want to start over from the first one on the next pass.
+        # So, we reset 'current_subreddit_index' to 0 here.
+        with state_lock:
+             if username in session_state:
+                  session_state[username]['current_subreddit_index'] = 0
+                  # We KEEP seen_urls to avoid re-commenting on same posts in the next loop.
+             save_state()
         
         # Determine actual comments posted/generated to add to daily limit
         with log_lock:
@@ -160,6 +223,7 @@ def run_single_account(account, params, daily_limits):
             if username not in daily_limits[today_str]:
                 daily_limits[today_str][username] = 0
             daily_limits[today_str][username] += len(all_results)
+            save_state() # Save state after updating limits
 
         # Tag results with account username to review/post later with correct driver
         for r in all_results:
@@ -170,14 +234,18 @@ def run_single_account(account, params, daily_limits):
 
         with result_lock:
             scraper_results.extend(all_results)
+            # Auto-close driver as we are running in automated server mode
             if driver:
-                drivers_instances[username] = driver
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
                 
     except Exception as e:
         scoped_print(f"Error: {str(e)}")
 
 def run_scraper_manager(params):
-    global scraper_status, scraper_results, drivers_instances, stop_requested
+    global scraper_status, scraper_results, drivers_instances, stop_requested, daily_limits
     scraper_status = "Running"
     scraper_results = []
     drivers_instances = {}
@@ -194,7 +262,8 @@ def run_scraper_manager(params):
         scraper_status = "Completed"
         return
 
-    daily_limits = {}
+    # Load persistent state
+    load_state()
 
     while not stop_requested:
         while not stop_requested and not is_within_time_window(time_start, time_end):
@@ -243,10 +312,11 @@ def run_scraper_manager(params):
     scraper_status = "Completed"
     stop_requested = False
 
-@app.route("/")
-def index():
-    return render_template("dashboard.html")
-
+@app.route("/"), session_state
+    try:
+        with log_lock:
+            daily_limits.clear()
+            session_state
 @app.route("/api/settings", methods=["GET", "POST"])
 def settings():
     if request.method == "POST":
@@ -262,7 +332,8 @@ def start_scraping():
         return jsonify({"error": "Already running"}), 400
     
     settings_data = load_settings()
-    settings_data['do_not_post'] = request.json.get('do_not_post', True)
+    # Default to False (auto-post) for server automation
+    settings_data['do_not_post'] = request.json.get('do_not_post', False)
     scraper_logs = []
     
     scraper_thread = threading.Thread(target=run_scraper_manager, args=(settings_data,))
@@ -276,6 +347,22 @@ def stop_scraping():
         stop_requested = True
         return jsonify({"status": "stopping"})
     return jsonify({"status": "not running"}), 400
+
+@app.route("/api/reset_state", methods=["POST"])
+def reset_state():
+    global daily_limits
+    try:
+        with log_lock:
+            daily_limits.clear()
+        
+        with state_lock:
+            if os.path.exists("state.json"):
+                os.remove("state.json")
+        
+        custom_print("State has been reset. Daily limits cleared.")
+        return jsonify({"status": "reset"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/status", methods=["GET"])
 def get_status():

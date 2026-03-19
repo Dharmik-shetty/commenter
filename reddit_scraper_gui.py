@@ -260,7 +260,8 @@ class ScraperWorker(QThread):
                 similarity_threshold=self.params['similarity_threshold'],  # Add this line
                 similarity_method=self.params['similarity_method'],
                 tensorflow_sleep_time=self.params['tensorflow_sleep_time'],
-                existing_driver=self.driver
+                existing_driver=self.driver,
+                headless=self.params.get('headless', False)
             )
             self.update_log.emit("Scraping process completed.")
             self.scraping_finished.emit(all_results, self.driver)
@@ -715,6 +716,10 @@ class RedditScraperGUI(QMainWindow):
         self.do_not_post = QCheckBox("Generate AI comments only (do not review, do not post)")
         self.layout.addWidget(self.do_not_post)
 
+        # Headless mode checkbox
+        self.headless_checkbox = QCheckBox("Run Headless (Invisible Browser)")
+        self.layout.addWidget(self.headless_checkbox)
+
         # Start and Stop buttons
         button_layout = QHBoxLayout()
         
@@ -1012,6 +1017,8 @@ class RedditScraperGUI(QMainWindow):
             "proxy_settings": self.proxy_settings,
             "fingerprint_settings": self.fingerprint_settings,
             "advanced_settings": self.advanced_settings,
+            "do_not_post": self.do_not_post.isChecked(),
+            "headless": self.headless_checkbox.isChecked()
         }
 
         file_name, _ = QFileDialog.getSaveFileName(self, "Save Settings", default_filename, "JSON Files (*.json)")
@@ -1043,6 +1050,10 @@ class RedditScraperGUI(QMainWindow):
             self.proxy_settings = settings.get("proxy_settings", {})
             self.fingerprint_settings = settings.get("fingerprint_settings", {})
             self.advanced_settings = settings.get("advanced_settings", self.advanced_settings)
+            
+            self.do_not_post.setChecked(settings.get("do_not_post", False))
+            self.headless_checkbox.setChecked(settings.get("headless", False))
+            
             self.update_status(f"Settings imported from {file_name}")
         except Exception as e:
             QMessageBox.warning(self, "Import Error", f"Failed to import settings: {str(e)}")
@@ -1159,6 +1170,7 @@ class RedditScraperGUI(QMainWindow):
             "proxy_settings": self.proxy_settings,
             "fingerprint_settings": self.fingerprint_settings,
             "do_not_post": self.do_not_post.isChecked(),
+            "headless": self.headless_checkbox.isChecked(),
             "gemini_api_key": self.advanced_settings.get("gemini_api_key", "").strip(),
             "custom_prompt": self.advanced_settings.get("custom_prompt", "").strip(),
             "product_keywords": self.advanced_settings.get("product_keywords", ""),
