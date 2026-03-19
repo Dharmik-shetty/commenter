@@ -136,7 +136,7 @@
         "similarity_method": "TensorFlow (semantic_similarity)",
         "similarity_threshold": 0.85,
         "tensorflow_sleep_time": 1,
-        "time_end": "22:00",
+        "time_end": "23:59",
         "time_start": "07:00"
     },
     "ai_response_length": 30,

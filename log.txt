@@ -7502,3 +7502,292 @@ Comment posted successfully
 Comment posted successfully
 Successfully posted comment in r/BusinessIntelligence
 All selected comments have been processed.
+Outside of active time window (07:00 - 22:00). Sleeping for 60s...
+Scraping manually stopped.
+[Low-Patience-8910] Starting the scraping process... 100 comments allowed this run.
+[Plus-Sleep-437] Starting the scraping process... 100 comments allowed this run.
+[Terrible-House-6037] Starting the scraping process... 100 comments allowed this run.
+[Candid_Ground653] Starting the scraping process... 100 comments allowed this run.
+[Candid_Ground653] Error: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[No_Stage7893] Starting the scraping process... 100 comments allowed this run.
+[Low-Patience-8910] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[AdhesivenessFew3934] Starting the scraping process... 100 comments allowed this run.
+[Plus-Sleep-437] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:50954
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00A60B43+25139]
+	(No symbol) [0x009F13F4]
+	(No symbol) [0x008D04E3]
+	(No symbol) [0x009097AB]
+	(No symbol) [0x009087E9]
+	(No symbol) [0x008FED7F]
+	(No symbol) [0x008FEBB6]
+	(No symbol) [0x009490C2]
+	(No symbol) [0x009487DA]
+	(No symbol) [0x0093CDC6]
+	(No symbol) [0x0090BDE9]
+	(No symbol) [0x0090D124]
+	GetHandleVerifier [0x00D64373+3185251]
+	GetHandleVerifier [0x00D8291A+3309578]
+	GetHandleVerifier [0x00D7CF42+3286578]
+	GetHandleVerifier [0x00AF7AE0+643536]
+	(No symbol) [0x009FA20D]
+	(No symbol) [0x009F70B8]
+	(No symbol) [0x009F7257]
+	(No symbol) [0x009E9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[Consistent_Try7184] Starting the scraping process... 100 comments allowed this run.
+[AdhesivenessFew3934] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:50956
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00A60B43+25139]
+	(No symbol) [0x009F13F4]
+	(No symbol) [0x008D04E3]
+	(No symbol) [0x009097AB]
+	(No symbol) [0x009087E9]
+	(No symbol) [0x008FED7F]
+	(No symbol) [0x008FEBB6]
+	(No symbol) [0x009490C2]
+	(No symbol) [0x009487DA]
+	(No symbol) [0x0093CDC6]
+	(No symbol) [0x0090BDE9]
+	(No symbol) [0x0090D124]
+	GetHandleVerifier [0x00D64373+3185251]
+	GetHandleVerifier [0x00D8291A+3309578]
+	GetHandleVerifier [0x00D7CF42+3286578]
+	GetHandleVerifier [0x00AF7AE0+643536]
+	(No symbol) [0x009FA20D]
+	(No symbol) [0x009F70B8]
+	(No symbol) [0x009F7257]
+	(No symbol) [0x009E9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[Budget-County-1868] Starting the scraping process... 100 comments allowed this run.
+[No_Stage7893] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:50957
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00A60B43+25139]
+	(No symbol) [0x009F13F4]
+	(No symbol) [0x008D04E3]
+	(No symbol) [0x009097AB]
+	(No symbol) [0x009087E9]
+	(No symbol) [0x008FED7F]
+	(No symbol) [0x008FEBB6]
+	(No symbol) [0x009490C2]
+	(No symbol) [0x009487DA]
+	(No symbol) [0x0093CDC6]
+	(No symbol) [0x0090BDE9]
+	(No symbol) [0x0090D124]
+	GetHandleVerifier [0x00D64373+3185251]
+	GetHandleVerifier [0x00D8291A+3309578]
+	GetHandleVerifier [0x00D7CF42+3286578]
+	GetHandleVerifier [0x00AF7AE0+643536]
+	(No symbol) [0x009FA20D]
+	(No symbol) [0x009F70B8]
+	(No symbol) [0x009F7257]
+	(No symbol) [0x009E9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[Dapper-Constant3816] Starting the scraping process... 100 comments allowed this run.
+[Budget-County-1868] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Free_Research_954] Starting the scraping process... 100 comments allowed this run.
+[Consistent_Try7184] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:62730
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00E60B43+25139]
+	(No symbol) [0x00DF13F4]
+	(No symbol) [0x00CD04E3]
+	(No symbol) [0x00D097AB]
+	(No symbol) [0x00D087E9]
+	(No symbol) [0x00CFED7F]
+	(No symbol) [0x00CFEBB6]
+	(No symbol) [0x00D490C2]
+	(No symbol) [0x00D487DA]
+	(No symbol) [0x00D3CDC6]
+	(No symbol) [0x00D0BDE9]
+	(No symbol) [0x00D0D124]
+	GetHandleVerifier [0x01164373+3185251]
+	GetHandleVerifier [0x0118291A+3309578]
+	GetHandleVerifier [0x0117CF42+3286578]
+	GetHandleVerifier [0x00EF7AE0+643536]
+	(No symbol) [0x00DFA20D]
+	(No symbol) [0x00DF70B8]
+	(No symbol) [0x00DF7257]
+	(No symbol) [0x00DE9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[Wild-Butterfly-4067] Starting the scraping process... 100 comments allowed this run.
+[Wild-Butterfly-4067] Error: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Tall_Acadia_9653] Starting the scraping process... 100 comments allowed this run.
+[Free_Research_954] Error: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Adept-Bus-9353] Starting the scraping process... 100 comments allowed this run.
+[Tall_Acadia_9653] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[That_Researcher_4409] Starting the scraping process... 100 comments allowed this run.
+[Adept-Bus-9353] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Cool-Competition-793] Starting the scraping process... 100 comments allowed this run.
+[Terrible-House-6037] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Neither-King-8301] Starting the scraping process... 100 comments allowed this run.
+[Dapper-Constant3816] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:62434
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00B20B43+25139]
+	(No symbol) [0x00AB13F4]
+	(No symbol) [0x009904E3]
+	(No symbol) [0x009C97AB]
+	(No symbol) [0x009C87E9]
+	(No symbol) [0x009BED7F]
+	(No symbol) [0x009BEBB6]
+	(No symbol) [0x00A090C2]
+	(No symbol) [0x00A087DA]
+	(No symbol) [0x009FCDC6]
+	(No symbol) [0x009CBDE9]
+	(No symbol) [0x009CD124]
+	GetHandleVerifier [0x00E24373+3185251]
+	GetHandleVerifier [0x00E4291A+3309578]
+	GetHandleVerifier [0x00E3CF42+3286578]
+	GetHandleVerifier [0x00BB7AE0+643536]
+	(No symbol) [0x00ABA20D]
+	(No symbol) [0x00AB70B8]
+	(No symbol) [0x00AB7257]
+	(No symbol) [0x00AA9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[DenseMost3152] Starting the scraping process... 100 comments allowed this run.
+[That_Researcher_4409] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:53055
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00B20B43+25139]
+	(No symbol) [0x00AB13F4]
+	(No symbol) [0x009904E3]
+	(No symbol) [0x009C97AB]
+	(No symbol) [0x009C87E9]
+	(No symbol) [0x009BED7F]
+	(No symbol) [0x009BEBB6]
+	(No symbol) [0x00A090C2]
+	(No symbol) [0x00A087DA]
+	(No symbol) [0x009FCDC6]
+	(No symbol) [0x009CBDE9]
+	(No symbol) [0x009CD124]
+	GetHandleVerifier [0x00E24373+3185251]
+	GetHandleVerifier [0x00E4291A+3309578]
+	GetHandleVerifier [0x00E3CF42+3286578]
+	GetHandleVerifier [0x00BB7AE0+643536]
+	(No symbol) [0x00ABA20D]
+	(No symbol) [0x00AB70B8]
+	(No symbol) [0x00AB7257]
+	(No symbol) [0x00AA9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[BlockIllustrious2317] Starting the scraping process... 100 comments allowed this run.
+[Cool-Competition-793] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:49686
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00B20B43+25139]
+	(No symbol) [0x00AB13F4]
+	(No symbol) [0x009904E3]
+	(No symbol) [0x009C97AB]
+	(No symbol) [0x009C87E9]
+	(No symbol) [0x009BED7F]
+	(No symbol) [0x009BEBB6]
+	(No symbol) [0x00A090C2]
+	(No symbol) [0x00A087DA]
+	(No symbol) [0x009FCDC6]
+	(No symbol) [0x009CBDE9]
+	(No symbol) [0x009CD124]
+	GetHandleVerifier [0x00E24373+3185251]
+	GetHandleVerifier [0x00E4291A+3309578]
+	GetHandleVerifier [0x00E3CF42+3286578]
+	GetHandleVerifier [0x00BB7AE0+643536]
+	(No symbol) [0x00ABA20D]
+	(No symbol) [0x00AB70B8]
+	(No symbol) [0x00AB7257]
+	(No symbol) [0x00AA9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+
+[Curious-Concept5606] Starting the scraping process... 100 comments allowed this run.
+[DenseMost3152] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Worried-History1165] Starting the scraping process... 100 comments allowed this run.
+[Curious-Concept5606] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[BlockIllustrious2317] Error: [WinError 183] Cannot create a file when that file already exists: 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected\\chromedriver-win32\\chromedriver.exe' -> 'C:\\Users\\hardi\\appdata\\roaming\\undetected_chromedriver\\undetected_chromedriver.exe'
+[Neither-King-8301] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:52087
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00270B43+25139]
+	(No symbol) [0x002013F4]
+	(No symbol) [0x000E04E3]
+	(No symbol) [0x001197AB]
+	(No symbol) [0x001187E9]
+	(No symbol) [0x0010ED7F]
+	(No symbol) [0x0010EBB6]
+	(No symbol) [0x001590C2]
+	(No symbol) [0x001587DA]
+	(No symbol) [0x0014CDC6]
+	(No symbol) [0x0011BDE9]
+	(No symbol) [0x0011D124]
+	GetHandleVerifier [0x00574373+3185251]
+	GetHandleVerifier [0x0059291A+3309578]
+	GetHandleVerifier [0x0058CF42+3286578]
+	GetHandleVerifier [0x00307AE0+643536]
+	(No symbol) [0x0020A20D]
+	(No symbol) [0x002070B8]
+	(No symbol) [0x00207257]
+	(No symbol) [0x001F9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+	(No symbol) [0x00000000]
+
+[Worried-History1165] Error: Message: session not created: cannot connect to chrome at 127.0.0.1:52090
+from session not created: This version of ChromeDriver only supports Chrome version 133
+Current browser version is 146.0.7680.80; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+Stacktrace:
+	GetHandleVerifier [0x00270B43+25139]
+	(No symbol) [0x002013F4]
+	(No symbol) [0x000E04E3]
+	(No symbol) [0x001197AB]
+	(No symbol) [0x001187E9]
+	(No symbol) [0x0010ED7F]
+	(No symbol) [0x0010EBB6]
+	(No symbol) [0x001590C2]
+	(No symbol) [0x001587DA]
+	(No symbol) [0x0014CDC6]
+	(No symbol) [0x0011BDE9]
+	(No symbol) [0x0011D124]
+	GetHandleVerifier [0x00574373+3185251]
+	GetHandleVerifier [0x0059291A+3309578]
+	GetHandleVerifier [0x0058CF42+3286578]
+	GetHandleVerifier [0x00307AE0+643536]
+	(No symbol) [0x0020A20D]
+	(No symbol) [0x002070B8]
+	(No symbol) [0x00207257]
+	(No symbol) [0x001F9E00]
+	BaseThreadInitThunk [0x75E85D49+25]
+	RtlInitializeExceptionChain [0x773ED2FB+107]
+	RtlGetAppContainerNamedObjectPath [0x773ED281+561]
+	(No symbol) [0x00000000]
+
+Round completed. Waiting 60 seconds before next pass...
+Scraping manually stopped.
