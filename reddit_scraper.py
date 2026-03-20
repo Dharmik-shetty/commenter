@@ -792,6 +792,19 @@ def post_comment(driver, ai_comment, post_url):
         return False
 
 
+
+def find_chrome_executable():
+    """Finds the Chrome executable path on Windows."""
+    candidates = [
+        os.path.join(os.environ.get("PROGRAMFILES", "C:\\Program Files"), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("PROGRAMFILES(X86)", "C:\\Program Files (x86)"), "Google", "Chrome", "Application", "chrome.exe"),
+        os.path.join(os.environ.get("LOCALAPPDATA", ""), "Google", "Chrome", "Application", "chrome.exe"),
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
 def login_and_scrape_reddit(
     username,
     password,
@@ -851,11 +864,25 @@ def login_and_scrape_reddit(
             if proxy_settings.get("username") and proxy_settings.get("password"):
                 options.add_argument(f"--proxy-auth={proxy_settings['username']}:{proxy_settings['password']}")
 
+        # Attempt to find Chrome binary explicitly to avoid "Binary Location Must be a String" error
+        chrome_path = find_chrome_executable()
+        if chrome_path:
+            options.binary_location = chrome_path
+            custom_print(f"Explicitly set Chrome binary location: {chrome_path}")
+
         # Explicitly specify Chrome version to match the installed version
-        driver = uc.Chrome(
-            options=options
-            # version_main=133  # Set to match your Chrome version 133.0.6943.142
-        )
+        try:
+            driver = uc.Chrome(
+                options=options
+                # version_main=133  # Set to match your Chrome version 133.0.6943.142
+            )
+        except TypeError as e:
+            if "Binary Location Must be a String" in str(e):
+                 custom_print("Caught 'Binary Location Must be a String' error. Retrying with finding binary again or checking installation.")
+                 # If we haven't found it yet, this might be why
+                 if not chrome_path:
+                      custom_print("Could not locate Chrome binary automatically. Please install Google Chrome.")
+            raise e
         custom_print("New WebDriver session initialized")
 
         # Apply JavaScript attributes using CDP
@@ -928,10 +955,15 @@ def login_and_scrape_reddit(
             driver.get(subreddit_url)
             custom_print("Waiting for page to load...")
 
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.TAG_NAME, "article"))
-            )
-            custom_print("Articles loaded.")
+            try:
+                # Wait up to 15 seconds to see if articles load
+                WebDriverWait(driver, 15).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "article"))
+                )
+                custom_print("Articles loaded.")
+            except TimeoutException:
+                custom_print(f"Timeout loading articles for r/{subreddit_name}. This subreddit might be banned, private, restricted, or empty. Skipping...")
+                return [], 0
 
             collected_info = []
             relevant_posts_queue = []

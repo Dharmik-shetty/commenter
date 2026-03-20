@@ -9531,3 +9531,608 @@ Scraping process completed.
 Scraping completed for all subreddits. Total relevant posts processed: 0
 [Low-Patience-8910] Scraping completed.
 Scraping manually stopped.
+[Low-Patience-8910] Starting the scraping process... 100 comments allowed this run.
+New WebDriver session initialized
+Navigating to Reddit login page...
+Waiting for username field...
+Waiting for password field...
+Entering username and password...
+Logging in.. Waiting for articles to load...
+WebDriver initialized successfully
+username:Low-Patience-8910                      
+ subreddits:['1200isplenty', 'Accountability', 'AdvancedFitness', 'DesiFitness', 'Fitness', 'FitnessAustralia', 'FitnessCanada', 'FitnessMaterialHeaven', 'FitnessUK', 'Fitness_India', 'GYM', 'GetMotivated', 'GetMotivatedBuddies', 'GymFails', 'GymMemes', 'HIIT', 'Health', 'IndiaFit', 'IndiaRunning', 'IndianFitness', 'RunningShoeGeeks', 'RunningUK', 'Strongman', 'UKFitness', 'applefitnessplus', 'bayareafitness', 'beginnerfitness', 'bodybuilding', 'bodytransformation', 'bodyweightfitness', 'broscience', 'calisthenic', 'crossfit', 'cycling', 'decidingtobebetter', 'eatcheapandhealthy', 'fasting', 'fitbit', 'fitness30plus', 'fitness40plus', 'fitnessapps', 'fitnessjourney', 'fitnessmotivation', 'fitnessscience', 'flexibility', 'gainit', 'garmin', 'gymhumor', 'gymmotivation', 'healthyfood', 'homegym', 'homeworkouts', 'intermittentfasting', 'keto', 'kettlebell', 'leangains', 'londonfitness', 'loseit', 'loseweight', 'mealprep', 'naturalbodybuilding', 'nutrition', 'nycfitness', 'overweight', 'petitefitness', 'powerlifting', 'progresspics', 'rowing', 'running', 'selfimprovement', 'smartwatchfitness', 'torontofitness', 'transfitness', 'triathlon', 'volumeeating', 'wearables', 'weightlifting', 'weightloss', 'workout', 'xxfitness', 'yoga']                     
+ sort-type:new                     
+ max_articles:20                     
+ max_comments:100                     
+ min_wait_time:50                     
+ max_wait_time:150                     
+ Ai response length:30                     
+ proxy settings:{'enabled': False}                     
+ gemini api key:AIzaSyCPCgizzO8gNWnkHUrsudez4jwpmIVqTfY 
+ fingerprint settings: {}  
+ comment scroll retries: 3 
+ comment button retries: 1                     
+ persona:normal                     
+ custom model:gemini-3.1-flash-lite-preview                     
+ product keywords:ai fitness app, always quit after weeks, any app recommendations, beginner routine, beginner workout help, best fitness app, brain tired planning, cant build habit, cant decide what to lift, cant hit protein, cant stay consistent, clueless about workouts, confused about calories, confused about training plan, decision fatigue diet, diet tracking app, dont know what to eat, dont know what workout to follow, eating feels overwhelming, first time lifting, gym newbie, hate building routines, how much should i eat, how to stay consistent, information overload fitness, just want someone to tell me what to do, keep falling off track, looking for something that builds my plan, lose motivation fast, lost in the gym, meal ideas for weight loss, mental load fitness, need accountability, need simple meal plan, need something simple and automatic, need structure without thinking, never stick to plan, new to gym, no idea how to structure workouts, on and off with gym, overthinking gym program, overwhelmed by fitness info, paralyzed by too many programs, planning fatigue gym, program generator, restart fitness journey, something to automate workouts, starting fitness journey, struggling to make a routine, struggling with macros, tired of planning workouts, too much thinking, tool to build routine, tracking calories is exhausting, want an app to tell me what to do, want less guesswork, what diet should i follow, where do i start, wish it was simpler, workout planner app                     
+ similarity method:TensorFlow (semantic_similarity)                     
+ similarity threshold:0.85                     
+ tensorflow sleep time:1
+Timeout waiting for element: shreddit-post
+Logged in. Articles loaded successfully
+
+Starting to scrape subreddit: r/1200isplenty (checking up to 20 posts this pass)
+Waiting for page to load...
+Articles loaded.
+Found 28 visible posts in r/1200isplenty
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 1/20 relevance=0.250 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryqo0u/this_thing_is_just_250_cal/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 2/20 relevance=0.400 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1rynwsc/built_recipepal_to_help_people_cook_with_what/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 3/20 relevance=0.600 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1rynhvq/freezing_carbe_diem_pasta/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 4/20 relevance=0.000 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1rykcls/earl_grey_tea_milk_steeped_over_night_banana/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 5/20 relevance=0.750 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryjscq/how_to_make_ninja_creami_without_machine/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 6/20 relevance=0.000 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryjcnj/thoughts/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 7/20 relevance=0.000 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryg992/hmart_website_had_shin_light/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 8/20 relevance=0.200 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryfjd2/crawfish_or_shrimp_quesadillas_for_410cal/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 9/20 relevance=0.600 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryfee6/what_would_you_do_with_vegan_shrimp/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 10/20 relevance=0.500 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryf7ts/best_ranch_alternatives/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 11/20 relevance=0.333 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ryekgn/new_quest_stacks_bars_dual_review_brownie_a_la/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 12/20 relevance=0.143 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1rycl2a/my_lil_evening_snackie_200kcal/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 13/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1rybo34/first_time_trying_chia_seed_pudding_15g_protein8g/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 14/20 relevance=0.250 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry8avl/proud_of_this/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 15/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry7n7z/favourite_apps/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 16/20 relevance=0.250 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry77ht/pasta_salad_prep_381cal_for_the_whole_batch/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 17/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry6n4k/191_days_of_dieting_no_exercise_and_im_8lbs36kg/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 18/20 relevance=0.333 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry5hbl/low_calorie_lunch_idea_only_336_calories_total/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 19/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry42mw/nurri_creamer_anyone_tried_it/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 20/20 relevance=0.000 (threshold=0.850) - https://www.reddit.com/r/1200isplenty/comments/1ry3n8k/found_at_costco_1010_low_sugar_treat/
+Post skipped due to low relevance score.
+Scraping pass complete for r/1200isplenty. Checked 20 posts, found 0 relevant posts.
+
+Starting to scrape subreddit: r/Accountability (checking up to 20 posts this pass)
+Waiting for page to load...
+Articles loaded.
+Found 3 visible posts in r/Accountability
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 1/20 relevance=0.714 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1ryn2ug/looking_for_a_paid_accountability_patner/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 2/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxzhcz/looking_an_accountability_buddy_for_morning/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 3/20 relevance=0.625 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxytnl/looking_for_accountability_partner_for_job_switch/
+Post skipped due to low relevance score.
+Found 28 visible posts in r/Accountability
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 4/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxxdul/28_and_29yo_f_looking_for_workout_accountability/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 5/20 relevance=0.800 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxw5ux/m29_looking_for_an_accountability_partner_dallas/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 6/20 relevance=0.500 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxvn23/22m_looking_to_help_with_study_checking_in/
+Post skipped due to low relevance score.
+Skipping post https://www.reddit.com/r/accountability/comments/1rxq7p1/31m_looking_for_accountability_partner_for_study/ - already processed by an account in the past.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 7/20 relevance=0.750 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rxfe38/looking_for_one_or_more_people_to_be/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 8/20 relevance=0.667 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rx8p22/22_ist_strict_accountability_checkin/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 9/20 relevance=0.500 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rx7crc/looking_for_daily_coworking_sessions_on_discord/
+Post skipped due to low relevance score.
+TensorFlow semantic mode selected; using fallback semantic keyword score.
+Post 10/20 relevance=1.000 (threshold=0.850) - https://www.reddit.com/r/accountability/comments/1rx5q97/26m_need_a_accountability_partner_to_level_up_vlsi/
+Extracting up to 10 comments...
+Extracting comments from: https://www.reddit.com/r/accountability/comments/1rx5q97/26m_need_a_accountability_partner_to_level_up_vlsi/
+Navigated to post page
+Waiting for comments to load...
+Comments loaded successfully
+No 'View more comments' button found or not clickable
+Skipping comment due to missing elements
+Scrolling down to load more comments...
+No 'View more comments' button found or not clickable
+Skipping comment due to missing elements
+Scrolling down to load more comments...
+No 'View more comments' button found or not clickable
+Skipping comment due to missing elements
+Could only find 0 comments. There may not be 10 comments available.
+Closing comment extraction window
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Unexpected error processing post in r/Accountability: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+An unexpected error occurred: Message: invalid session id; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#invalidsessionidexception
+Stacktrace:
+	undetected_chromedriver!GetHandleVerifier [0x1297c13+10dd3]
+	undetected_chromedriver!GetHandleVerifier [0x1297d44+10f04]
+	undetected_chromedriver!(No symbol) [0x1071d8e]
+	undetected_chromedriver!(No symbol) [0x10af2b5]
+	undetected_chromedriver!(No symbol) [0x10dd7c6]
+	undetected_chromedriver!(No symbol) [0x10d8c41]
+	undetected_chromedriver!(No symbol) [0x10d8262]
+	undetected_chromedriver!(No symbol) [0x104517e]
+	undetected_chromedriver!(No symbol) [0x104571e]
+	undetected_chromedriver!(No symbol) [0x1045bfd]
+	undetected_chromedriver!GetHandleVerifier [0x14f4509+26d6c9]
+	undetected_chromedriver!GetHandleVerifier [0x14efb43+268d03]
+	undetected_chromedriver!GetHandleVerifier [0x150d85b+286a1b]
+	undetected_chromedriver!GetHandleVerifier [0x12b1668+2a828]
+	undetected_chromedriver!GetHandleVerifier [0x12b97fd+329bd]
+	undetected_chromedriver!(No symbol) [0x1044ee9]
+	undetected_chromedriver!(No symbol) [0x1044530]
+	undetected_chromedriver!GetHandleVerifier [0x163dc9f+3b6e5f]
+	KERNEL32!BaseThreadInitThunk [0x768a5d49+19]
+	ntdll!RtlInitializeExceptionChain [0x77dbd2fb+6b]
+	ntdll!RtlGetAppContainerNamedObjectPath [0x77dbd281+231]
+
+Scraping process completed.
+Scraping completed for all subreddits. Total relevant posts processed: 0
+[Low-Patience-8910] Scraping completed.
