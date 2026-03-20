@@ -195,7 +195,8 @@ def run_single_account(account, params, daily_limits):
             per_subreddit_max_posts_to_check=params.get('advanced_settings', {}).get('per_subreddit_max_posts_to_check', params.get('max_articles', 100)),
             existing_driver=None, # Always spawn new driver for parallel accounts
             resume_state=user_resume_state,
-            update_state_callback=update_state_callback
+            update_state_callback=update_state_callback,
+            headless=params.get('advanced_settings', {}).get('headless', False)
         )
         
         scoped_print("Scraping completed.")

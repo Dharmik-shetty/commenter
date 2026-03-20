@@ -113,6 +113,10 @@
                 <input type="time" id="time_end" class="form-control" />
             </div>
         </div>
+        <div class="mb-3 form-check">
+            <input type="checkbox" id="headless" class="form-check-input" />
+            <label class="form-check-label" for="headless">Run Headless (Invisible Browser)</label>
+        </div>
         <div class="mb-3">
             <label>Max Comments Per Day (per account limit)</label>
             <input type="number" id="max_comments_per_day" class="form-control" placeholder="e.g. 50">
@@ -211,6 +215,7 @@
         const adv = currentSettingsInfo.advanced_settings || {};
         document.getElementById('time_start').value = adv.time_start || '00:00';
         document.getElementById('time_end').value = adv.time_end || '23:59';
+        document.getElementById('headless').checked = adv.headless || false;
         document.getElementById('max_comments_per_day').value = adv.max_comments_per_day || 50;
         document.getElementById('main_max_comments_per_day').value = adv.max_comments_per_day || 50;
         document.getElementById('gemini_api_key').value = adv.gemini_api_key || '';
@@ -244,6 +249,7 @@
         currentSettingsInfo.advanced_settings = currentSettingsInfo.advanced_settings || {};
         currentSettingsInfo.advanced_settings.time_start = document.getElementById('time_start').value;
         currentSettingsInfo.advanced_settings.time_end = document.getElementById('time_end').value;
+        currentSettingsInfo.advanced_settings.headless = document.getElementById('headless').checked;
         // currentSettingsInfo.advanced_settings.max_comments_per_day = parseInt(document.getElementById('max_comments_per_day').value) || 50;
         currentSettingsInfo.advanced_settings.max_comments_per_day = parseInt(document.getElementById('main_max_comments_per_day').value) || 50;
         
