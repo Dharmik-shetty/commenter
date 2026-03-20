@@ -312,11 +312,10 @@ def run_scraper_manager(params):
     scraper_status = "Completed"
     stop_requested = False
 
-@app.route("/"), session_state
-    try:
-        with log_lock:
-            daily_limits.clear()
-            session_state
+@app.route("/")
+def index():
+    return render_template("dashboard.html")
+
 @app.route("/api/settings", methods=["GET", "POST"])
 def settings():
     if request.method == "POST":

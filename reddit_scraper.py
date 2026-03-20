@@ -1074,20 +1074,7 @@ def login_and_scrape_reddit(
                     custom_print(f"Waiting {ai_wait_time} seconds before continuing...")
                     time.sleep(ai_wait_time)
 
-        resume_index = 0
-        if resume_state:
-             resume_index = resume_state.get("current_subreddit_index", 0)
-        
-        for idx, subreddit in enumerate(subreddits):
-            if idx < resume_index:
-                custom_print(f"Skipping already scraped subreddit: r/{subreddit}")
-                continue
-                
-            if update_state_callback:
-                 update_state_callback({"current_subreddit_index": idx})
-
-                f"Scraping pass complete for r/{subreddit_name}. Checked {checked_posts} posts, found {len(collected_info)} relevant posts."
-            )
+            custom_print(f"Scraping pass complete for r/{subreddit_name}. Checked {checked_posts} posts, found {len(collected_info)} relevant posts.")
             return collected_info, new_urls_processed
 
         total_target = int(max_comments or 0)
@@ -1095,7 +1082,16 @@ def login_and_scrape_reddit(
             total_target = 0
 
         # Pass 1: respect per-subreddit post-check cap.
-        for subreddit in subreddits:
+        resume_index = resume_state.get("current_subreddit_index", 0) if resume_state else 0
+        
+        for idx, subreddit in enumerate(subreddits):
+            if idx < resume_index:
+                custom_print(f"Skipping already scraped subreddit: r/{subreddit}")
+                continue
+            
+            if update_state_callback:
+                 update_state_callback({"current_subreddit_index": idx})
+
             collected_info, _ = scrape_subreddit_once(subreddit, per_subreddit_limit)
             all_collected_info.extend(collected_info)
 
